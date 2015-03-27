@@ -6,6 +6,7 @@ use Assert\Assertion;
 use Phly\Http\Request;
 use Phly\Http\Response;
 use Phpantom\Client\ClientInterface;
+use Phpantom\Document\DocumentInterface;
 use Phpantom\Filter\FilterInterface;
 use Phpantom\Frontier\FrontierInterface;
 use Phpantom\ResultsStorage\ResultsStorageInterface;

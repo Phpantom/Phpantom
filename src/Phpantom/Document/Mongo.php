@@ -56,7 +56,7 @@ class Mongo implements DocumentInterface
         unset($data['id']);
         unset($data['_id']);
         $this->storage->documents->update(
-            ['_id'=>$id],
+            ['_id'=>$id, '_type'=>$type],
             ['$set' => $data]
         );
 
@@ -73,13 +73,14 @@ class Mongo implements DocumentInterface
         Assertion::string($id);
 
         $document = $this->storage->documents->findOne(array(
-                '_id' => $id
+                '_id' => $id,
+                '_type' => $type
             ));
 
         if ($document) {
-            return array_merge($document, array(
-                        'id' => $id,
-                    ));
+            unset($document['_id']);
+            unset($document['_type']);
+            return $document;
         }
 
         return null;
@@ -96,11 +97,8 @@ class Mongo implements DocumentInterface
         Assertion::string($type);
         Assertion::string($id);
 
-        $data['_type'] = $type;
-        $data['_id'] = $id;
-        unset($data['id']);
         $this->storage->documents->remove(
-            ['_id'=>$id],
+            ['_id'=>$id, '_type'=>$type],
             ['justOne' => true]
         );
     }
@@ -129,7 +127,7 @@ class Mongo implements DocumentInterface
     {
         Assertion::string($type);
 
-        return $this->storage->documents->find(['_type'=>$type]);
+        return $this->storage->documents->find(['_type'=>$type], ['_type'=>false, '_id'=>false]);
     }
 
 
@@ -141,8 +139,8 @@ class Mongo implements DocumentInterface
     {
         Assertion::nullOrString($type);
         return is_null($type)?
-            $this->storage->documents->find() :
-            $this->storage->documents->find(['_type'=>$type]);
+            $this->storage->documents->find([],['_type'=>false, '_id'=>false]) :
+            $this->getList($type);
     }
 
     /**
@@ -161,8 +159,8 @@ class Mongo implements DocumentInterface
     {
         Assertion::nullOrString($type);
         return is_null($type)?
-            $this->storage->documents->count(['_type'=>$type]) :
-            $this->storage->documents->count();
+            $this->storage->documents->count():
+            $this->storage->documents->count(['_type'=>$type]) ;
     }
 
     /**
