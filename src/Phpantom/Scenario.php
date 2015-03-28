@@ -1,10 +1,9 @@
 <?php
 
-namespace Phantom;
+namespace Phpantom;
 
 use Phpantom\Client\ClientInterface;
 use Phpantom\Document\DocumentInterface;
-use Phpantom\Engine;
 use Phpantom\Filter\FilterInterface;
 use Phpantom\Frontier\FrontierInterface;
 use Phpantom\ResultsStorage\ResultsStorageInterface;
@@ -38,7 +37,8 @@ abstract class Scenario
     public function __construct(ClientInterface $client, FrontierInterface $frontier, FilterInterface $filter,
         ResultsStorageInterface $resultsStorage, DocumentInterface $documentsStorage, LoggerInterface $logger)
     {
-        $this->name = array_pop(explode('\\', strtolower(get_class($this))));
+        $chunks = explode('\\', strtolower(get_class($this)));
+        $this->name = array_pop($chunks);
         $this->engine = new \Phpantom\Engine($client, $frontier, $filter, $resultsStorage, $documentsStorage, $logger);
 
         $this->engine->setProject($this->name);
