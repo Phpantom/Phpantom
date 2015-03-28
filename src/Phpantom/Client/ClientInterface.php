@@ -2,7 +2,7 @@
 
 namespace Phpantom\Client;
 
-use Phpantom\Resource;
+use Psr\Http\Message\RequestInterface;
 
 /**
  * Interface ClientInterface
@@ -11,8 +11,8 @@ use Phpantom\Resource;
 interface ClientInterface
 {
     /**
-     * @param \Phpantom\Resource|Resource $resource
+     * @param RequestInterface $request
      * @return mixed
      */
-    public function load(Resource $resource);
+    public function load(RequestInterface $request);
 }

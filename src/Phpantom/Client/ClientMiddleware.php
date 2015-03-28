@@ -3,6 +3,7 @@
 namespace Phpantom;
 
 use Phpantom\Client\ClientInterface;
+use Psr\Http\Message\RequestInterface;
 
 abstract class ClientMiddleware implements ClientInterface
 {
@@ -14,10 +15,10 @@ abstract class ClientMiddleware implements ClientInterface
     }
 
     /**
-     * @param \Phpantom\Resource|Resource $resource
+     * @param RequestInterface $request
      * @return mixed
      */
-    abstract public function load(Resource $resource);
+    abstract public function load(RequestInterface $request);
 
     public function getNext()
     {

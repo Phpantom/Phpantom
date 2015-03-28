@@ -4,7 +4,6 @@ namespace Phpantom;
 
 use Assert\Assertion;
 use Phly\Http\Request;
-use Phly\Http\Response;
 use Phpantom\Client\ClientInterface;
 use Phpantom\Document\DocumentInterface;
 use Phpantom\Filter\FilterInterface;
@@ -378,7 +377,9 @@ class Engine
     {
         while ($resource = $this->currentResource = $this->getFrontier()->nextResource()) {
             $this->getLogger()->debug('Loading resource from URL ' . $resource->getUri());
-            $response = $this->client->load($resource);
+            $request = $resource->getHttpRequest();
+            $httpResponse = $this->client->load($request);
+            $response = new Response($httpResponse);
 
             if (($response->getStatusCode() === 200 || $response->getStatusCode() === 408)
                 && strlen($response->getBody())
@@ -512,7 +513,7 @@ class Engine
     }
 
     /**
-     * @param Resource $resource
+     * @param \Phpantom\Resource|Resource $resource
      * @return bool
      */
     public function isVisited(Resource $resource)
@@ -521,7 +522,7 @@ class Engine
     }
 
     /**
-     * @param Resource $resource
+     * @param \Phpantom\Resource|Resource $resource
      */
     public function markScheduled(Resource $resource)
     {
@@ -530,7 +531,7 @@ class Engine
     }
 
     /**
-     * @param Resource $resource
+     * @param \Phpantom\Resource|Resource $resource
      * @return bool
      */
     public function isScheduled(Resource $resource)
@@ -540,7 +541,7 @@ class Engine
     }
 
     /**
-     * @param Resource $resource
+     * @param \Phpantom\Resource|Resource $resource
      * @param Response $response
      */
     public function markFailed(Resource $resource, Response $response)
@@ -558,7 +559,7 @@ class Engine
     }
 
     /**
-     * @param Resource $resource
+     * @param \Phpantom\Resource|Resource $resource
      */
     public function markParsed(Resource $resource)
     {
@@ -567,7 +568,7 @@ class Engine
     }
 
     /**
-     * @param Resource $resource
+     * @param \Phpantom\Resource|Resource $resource
      */
     public function markNotParsed(Resource $resource)
     {

@@ -1,14 +1,13 @@
 <?php
 
-namespace Phantom\Frontier;
+namespace Phpantom\Frontier;
 
 use Assert\Assertion;
-use Phpantom\Frontier\FrontierInterface;
 use Phpantom\Resource;
 
 /**
  * Class Mongo
- * @package Phantom\Frontier
+ * @package Phpantom\Frontier
  */
 class Mongo implements FrontierInterface
 {
@@ -120,5 +119,10 @@ class Mongo implements FrontierInterface
     public function clear()
     {
         $this->storage->{$this->getProjectFrontier()}->remove([]);
+    }
+
+    public function count()
+    {
+        return $this->storage->{$this->getProjectFrontier()}->count();
     }
 }

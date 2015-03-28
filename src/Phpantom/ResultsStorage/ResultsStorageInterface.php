@@ -32,7 +32,7 @@ interface ResultsStorageInterface
 
     /**
      * @param $status
-     * @return \Phpantom\Resource
+     * @return \Phpantom\Resource|null
      */
     public function nextResource($status);
 
@@ -41,4 +41,6 @@ interface ResultsStorageInterface
      * @return mixed
      */
     public function clear($status);
+
+    public function count($status);
 }

@@ -3,8 +3,8 @@
 namespace Phpantom\Client;
 
 use GuzzleHttp\Client;
-use Phpantom\Resource;
-use Phly\Http\Response;
+use Phly\Http\Response as HttpResponse;
+use Psr\Http\Message\RequestInterface;
 
 /**
  * Class Guzzle
@@ -44,17 +44,17 @@ class Guzzle implements ClientInterface
     }
 
     /**
-     * @param \Phpantom\Resource $resource
-     * @return mixed
+     * @param RequestInterface $request
+     * @return mixed|HttpResponse
      */
-    public function load(Resource $resource)
+    public function load(RequestInterface $request)
     {
-        //@todo add proxy $resource->getMeta('proxy')? $resource->getMeta('proxy') : null
+        //@todo add proxy $request->getMeta('proxy')? $request->getMeta('proxy') : null
         $request = $this->client->createRequest(
-            $resource->getMethod(),
-            $resource->getUri(),
+            $request->getMethod(),
+            $request->getUri(),
             [
-                'headers' => $resource->getHeaders()
+                'headers' => $request->getHeaders()
             ]
         );
         try {
@@ -62,9 +62,9 @@ class Guzzle implements ClientInterface
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             $guzzleResponse = $e->getResponse();
         }
-        $response = new Response('php://memory', $guzzleResponse->getStatusCode(), $guzzleResponse->getHeaders());
-        $response->getBody()
+        $httpResponse = new HttpResponse('php://memory', $guzzleResponse->getStatusCode(), $guzzleResponse->getHeaders());
+        $httpResponse->getBody()
             ->write($guzzleResponse->getBody()->getContents());
-        return $response;
+        return $httpResponse;
     }
 }

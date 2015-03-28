@@ -83,4 +83,15 @@ class Mongo implements ResultsStorageInterface
         $results = $this->getProjectStorage($status);
         $this->storage->$results->remove([]);
     }
+
+    /**
+     * @param string $status
+     * @return int
+     */
+    public function count($status)
+    {
+        Assertion::string($status);
+        $results = $this->getProjectStorage($status);
+        return $this->storage->$results->count();
+    }
 }

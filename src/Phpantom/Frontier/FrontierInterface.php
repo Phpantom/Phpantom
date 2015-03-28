@@ -27,7 +27,7 @@ interface FrontierInterface
     public function populate(Resource $resource, $priority = self::PRIORITY_NORMAL);
 
     /**
-     * @return \Phpantom\Resource
+     * @return \Phpantom\Resource|null
      */
     public function nextResource();
 
@@ -35,4 +35,7 @@ interface FrontierInterface
      * @return mixed
      */
     public function clear();
+
+    public function count();
+
 }

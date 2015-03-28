@@ -67,7 +67,12 @@ class Csv extends Processor
     {
         Assertion::string($type);
         if (!isset($this->handlers[$type])) {
-            $this->handlers[$type] = fopen($this->getFilePath($type, $params), 'w');
+            $path = $this->getFilePath($type, $params);
+            $dir = dirname($path);
+            if (!file_exists($dir)) {
+                mkdir($dir, 0777, true);
+            }
+            $this->handlers[$type] = fopen($path, 'w');
         }
         return $this->handlers[$type];
     }
@@ -123,7 +128,7 @@ class Csv extends Processor
     public function process(array $document, $type, array $params = [])
     {
         Assertion::string($type);
-        $handler = $this->getHandler($type);
+        $handler = $this->getHandler($type, $params);
         $this->formatRow($handler, $document, $params);
     }
 
