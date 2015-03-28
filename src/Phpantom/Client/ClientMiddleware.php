@@ -1,8 +1,7 @@
 <?php
 
-namespace Phpantom;
+namespace Phpantom\Client;
 
-use Phpantom\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 
 abstract class ClientMiddleware implements ClientInterface
