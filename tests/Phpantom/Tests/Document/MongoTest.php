@@ -13,6 +13,7 @@ class MongoTest extends \PHPUnit_Framework_TestCase
     public static function setUpBeforeClass()
     {
         $client = new \MongoClient();
+        (new \MongoDB($client, 'mongo_documents_test'))->drop();
         self::$mongo = new Mongo(new \MongoDB($client, 'mongo_documents_test'));
     }
 
