@@ -2,13 +2,11 @@
 
 namespace Phantom;
 
-use Phly\Http\Response;
 use Phpantom\Client\ClientInterface;
-use Phpantom\DocumentInterface;
+use Phpantom\Document\DocumentInterface;
 use Phpantom\Engine;
 use Phpantom\Filter\FilterInterface;
 use Phpantom\Frontier\FrontierInterface;
-use Phpantom\Resource;
 use Phpantom\ResultsStorage\ResultsStorageInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
@@ -40,7 +38,7 @@ abstract class Scenario
     public function __construct(ClientInterface $client, FrontierInterface $frontier, FilterInterface $filter,
         ResultsStorageInterface $resultsStorage, DocumentInterface $documentsStorage, LoggerInterface $logger)
     {
-        $this->name = strtolower(ltrim(get_class($this), '\Phpantom\Scenario\\'));
+        $this->name = array_pop(explode('\\', strtolower(get_class($this))));
         $this->engine = new \Phpantom\Engine($client, $frontier, $filter, $resultsStorage, $documentsStorage, $logger);
 
         $this->engine->setProject($this->name);

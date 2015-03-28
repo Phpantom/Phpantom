@@ -254,8 +254,8 @@ class Engine
      */
     public function createRelateResource(Resource $baseResource, $url, $type, $method = 'GET')
     {
-        $resource = $this->createResource($url, $type, $method)
-            ->withAddedHeader('Referer', $baseResource->getUri());
+        $httpRequest = new Request($url, $method, 'php://memory', ['Referer' => $baseResource->getUri()]);
+        $resource = new Resource($httpRequest, $type);
         return $resource;
     }
 
