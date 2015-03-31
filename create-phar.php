@@ -10,7 +10,8 @@ $phar = new Phar(
 );
 $phar->addFile('index.php');
 $phar->addFile('phpantom.php');
-$phar->setDefaultStub('index.php', 'index.php');
+$phar->setStub($phar->createDefaultStub("index.php"));
+//$phar->setDefaultStub('index.php', 'index.php');
 $phar->buildFromDirectory($srcRoot, '/.php$/');
 $phar->buildFromDirectory($vendor);
 

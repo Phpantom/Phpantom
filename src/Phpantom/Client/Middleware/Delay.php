@@ -3,7 +3,7 @@
 namespace Phpantom\Client\Middleware;
 
 use Assert\Assertion;
-use Phpantom\ClientMiddleware;
+use Phpantom\Client\ClientMiddleware;
 use Psr\Http\Message\RequestInterface;
 
 class Delay extends ClientMiddleware

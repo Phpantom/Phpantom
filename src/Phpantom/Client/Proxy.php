@@ -1,15 +1,14 @@
 <?php
 
-namespace Phpantom\Client\Middleware;
+namespace Phpantom\Client;
 
-use Phpantom\ClientMiddleware;
-use Psr\Http\Message\RequestInterface;
+use Phpantom\Rotator;
 
 /**
  * Class Proxy
- * @package Phpantom\Client\Middleware
+ * @package Phpantom\Client
  */
-class Proxy extends ClientMiddleware
+class Proxy
 {
     use Rotator;
 
@@ -36,22 +35,17 @@ class Proxy extends ClientMiddleware
         return $this->proxyList;
     }
 
-
-    /**
-     * @todo Rewrite addMeta !!!
-     * @param RequestInterface $resource
-     * @return mixed
-     */
-    public function load(RequestInterface $resource)
+    public function nextProxy()
     {
         if (!empty($this->getProxyList())) {
             $proxy = $this->rotate([$this, 'getProxy']);
-            $resource->addMeta(['proxy' => $proxy]);
+            return $proxy;
         }
-        return $this->getNext()->load($resource);
+        return null;
     }
 
     /**
+     * !!!!May be public?
      * @return mixed
      */
     private function getProxy()

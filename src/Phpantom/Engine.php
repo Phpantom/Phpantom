@@ -4,6 +4,7 @@ namespace Phpantom;
 
 use Assert\Assertion;
 use Phly\Http\Request;
+use Phpantom\BlobsStorage\Storage;
 use Phpantom\Client\ClientInterface;
 use Phpantom\Document\DocumentInterface;
 use Phpantom\Filter\FilterInterface;
@@ -81,6 +82,11 @@ class Engine
     private $resultsStorage;
 
     /**
+     * @var Storage
+     */
+    private $blobsStorage;
+
+    /**
      * @var DocumentInterface
      */
     private $storage;
@@ -121,6 +127,7 @@ class Engine
      * @param FrontierInterface $frontier
      * @param FilterInterface $filter
      * @param ResultsStorageInterface $resultsStorage
+     * @param BlobsStorage\Storage $blobsStorage
      * @param DocumentInterface $storage
      * @param LoggerInterface $logger
      */
@@ -129,6 +136,7 @@ class Engine
         FrontierInterface $frontier,
         FilterInterface $filter,
         ResultsStorageInterface $resultsStorage,
+        Storage $blobsStorage,
         DocumentInterface $storage,
         LoggerInterface $logger
     ) {
@@ -136,6 +144,7 @@ class Engine
         $this->frontier = $frontier;
         $this->filter = $filter;
         $this->resultsStorage = $resultsStorage;
+        $this->blobsStorage = $blobsStorage;
         $this->storage = $storage;
         $this->logger = $logger;
         register_shutdown_function(
@@ -245,6 +254,12 @@ class Engine
         return $boundResource;
     }
 
+    public function getBoundDocument(Resource $resource)
+    {
+        $meta = $resource->getMeta();
+        return $this->getDocument($meta['doc_type'], $meta['doc_id']);
+    }
+
     /**
      * @param \Phpantom\Resource|Resource $baseResource
      * @param $url
@@ -252,12 +267,13 @@ class Engine
      * @param string $method
      * @return Resource
      */
-    public function createRelateResource(Resource $baseResource, $url, $type, $method = 'GET')
+    public function createRelatedResource(Resource $baseResource, $url, $type, $method = 'GET')
     {
         $httpRequest = new Request($url, $method, 'php://memory', ['Referer' => $baseResource->getUri()]);
         $resource = new Resource($httpRequest, $type);
         return $resource;
     }
+
 
     /**
      * @param \Phpantom\Resource|Resource $resource
@@ -269,6 +285,7 @@ class Engine
         $resource->setMeta(['doc_id' => $docId, 'doc_type' => $docType]);
     }
 
+
     /**
      * @param $type
      * @param $id
@@ -277,6 +294,12 @@ class Engine
     public function createDocument($type, $id, array $data)
     {
         $this->getStorage()->create($type, $id, $data);
+    }
+
+    public function updateBoundDocument(Resource $resource, array $data)
+    {
+        $meta = $resource->getMeta();
+        $this->updateDocument($meta['doc_type'], $meta['doc_id'], $data);
     }
 
     /**

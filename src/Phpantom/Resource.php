@@ -30,7 +30,7 @@ class Resource
     }
 
     /**
-     * @return mixed
+     * @return Request
      */
     public function getHttpRequest()
     {

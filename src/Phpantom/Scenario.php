@@ -2,6 +2,7 @@
 
 namespace Phpantom;
 
+use Phpantom\BlobsStorage\Storage;
 use Phpantom\Client\ClientInterface;
 use Phpantom\Document\DocumentInterface;
 use Phpantom\Filter\FilterInterface;
@@ -31,36 +32,37 @@ abstract class Scenario
      * @param FrontierInterface $frontier
      * @param FilterInterface $filter
      * @param ResultsStorageInterface $resultsStorage
+     * @param BlobsStorage\Storage $blobsStorage
      * @param DocumentInterface $documentsStorage
      * @param LoggerInterface $logger
      */
     public function __construct(ClientInterface $client, FrontierInterface $frontier, FilterInterface $filter,
-        ResultsStorageInterface $resultsStorage, DocumentInterface $documentsStorage, LoggerInterface $logger)
+        ResultsStorageInterface $resultsStorage, Storage $blobsStorage, DocumentInterface $documentsStorage,
+        LoggerInterface $logger)
     {
         $chunks = explode('\\', strtolower(get_class($this)));
         $this->name = array_pop($chunks);
-        $this->engine = new \Phpantom\Engine($client, $frontier, $filter, $resultsStorage, $documentsStorage, $logger);
+        $this->engine = new \Phpantom\Engine($client, $frontier, $filter, $resultsStorage, $blobsStorage,
+            $documentsStorage, $logger);
 
         $this->engine->setProject($this->name);
-        //$engine = $this->engine;
-//        $this->engine->addHandler(
-//            'image',
-//            function (Response $response, Resource $resource) use ($engine) {
-//                $root = './blobs/' . $this->name . '/images';
-//                $filesystem = new FileSystem($root);
-//                $path = $filesystem->create($resource, $response->getContent(), $root, true);
-//                $meta = $resource->getMeta();
-//                $oldData = $engine->getDocument($meta['doc_type'], $meta['doc_id']);
-//                if (isset($oldData['images'])) {
-//                    $images = $oldData['images'];
-//                    $images[] = $path;
-//                    $images = array_unique($images);
-//                } else {
-//                    $images = [$path];
-//                }
-//                $engine->updateDocument($meta['doc_type'], $meta['doc_id'], ['images' => $images]);
-//            }
-//        );
+        $engine = $this->engine;
+        $this->engine->addHandler(
+            'image',
+            function (Response $response, Resource $resource) use ($engine, $blobsStorage) {
+                $path = $blobsStorage->write($resource, $response->getContent());
+                $oldData = $engine->getBoundDocument($resource);
+                if (isset($oldData['images'])) {
+                    $images = $oldData['images'];
+                    $images[] = $path;
+                    $images = array_unique($images);
+                } else {
+                    $images = [$path];
+                }
+                $engine->updateBoundDocument($resource, ['images' => $images]);
+
+            }
+        );
 
     }
 

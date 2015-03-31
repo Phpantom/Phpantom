@@ -1,13 +1,13 @@
 <?php
 
-namespace Phpantom\Client\Middleware;
+namespace Phpantom;
 
 use Zoya\Coin\Batch;
 use Zoya\Coin\CoinInterface;
 
 /**
  * Class Rotator
- * @package Phpantom\Client\Middleware
+ * @package Phpantom
  */
 trait Rotator
 {

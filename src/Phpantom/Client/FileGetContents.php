@@ -23,15 +23,23 @@ class FileGetContents implements ClientInterface
         return $this;
     }
 
-    public function setProxy($proxy)
+    public function setProxy(Proxy $proxy)
     {
         $this->proxy = $proxy;
         return $this;
     }
 
+    /**
+     * @return Proxy|null
+     */
     public function getProxy()
     {
         return $this->proxy;
+    }
+
+    public function nextProxy()
+    {
+        return $this->getProxy()->nextProxy();
     }
 
 
@@ -44,14 +52,14 @@ class FileGetContents implements ClientInterface
         }
         $opts = array('http' =>
             array(
-                'method'  => $request->getMethod(),
+                'method'  => $request->getMethod()?: 'GET',
                 'header'  => implode("\r\n", $headersList),
                 'content' => $request->getBody(),
                 'timeout' => $this->getTimeout(),
                 'ignore_errors' => true, //don't throw errors on 404 and so on
                 'request_fulluri' => true,
 //                'protocol_version' => 1.1
-                'proxy' => $this->getProxy()? : null
+                'proxy' => $this->nextProxy()? : null
             )
         );
 

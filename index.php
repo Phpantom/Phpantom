@@ -1,3 +1,3 @@
 <?php
-require_once "phar://phpantom.phar/autoload.php";
-require_once "phar://phpantom.phar/phpantom.php";
+require_once "autoload.php";
+require_once "phpantom.php";

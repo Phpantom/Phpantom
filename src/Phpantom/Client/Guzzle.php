@@ -19,6 +19,11 @@ class Guzzle implements ClientInterface
     private $client;
 
     /**
+     * @var Proxy
+     */
+    private $proxy;
+
+    /**
      * Constructor
      */
     public function __construct()
@@ -31,9 +36,9 @@ class Guzzle implements ClientInterface
                             'max' => 5,
                             'strict' => false,
                             'referer' => true,
-                            'protocols' => ['http', 'https'],
-//                            'proxy'   => 'tcp://localhost:8888'
+                            'protocols' => ['http', 'https']
                         ],
+                        //'proxy'   => 'tcp://localhost:8888',
                         'cookies' => true,
                         'stream' => false,
                         'future' => false
@@ -43,18 +48,38 @@ class Guzzle implements ClientInterface
         }
     }
 
+    public function setProxy(Proxy $proxy)
+    {
+        $this->proxy = $proxy;
+        return $this;
+    }
+
+    /**
+     * @return Proxy|null
+     */
+    public function getProxy()
+    {
+        return $this->proxy;
+    }
+
+    public function nextProxy()
+    {
+        return $this->getProxy()->nextProxy();
+    }
+
+
     /**
      * @param RequestInterface $request
      * @return mixed|HttpResponse
      */
     public function load(RequestInterface $request)
     {
-        //@todo add proxy $request->getMeta('proxy')? $request->getMeta('proxy') : null
         $request = $this->client->createRequest(
-            $request->getMethod(),
+            $request->getMethod()?: 'GET',
             $request->getUri(),
             [
-                'headers' => $request->getHeaders()
+                'headers' => $request->getHeaders(),
+                'proxy' => $this->nextProxy()
             ]
         );
         try {

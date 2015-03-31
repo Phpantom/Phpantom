@@ -2,7 +2,7 @@
 
 namespace Phpantom\Client\Middleware;
 
-use Phpantom\ClientMiddleware;
+use Phpantom\Client\ClientMiddleware;
 use Psr\Http\Message\RequestInterface;
 
 /**

@@ -4,7 +4,7 @@ namespace Phpantom\Client;
 
 use Psr\Http\Message\RequestInterface;
 
-abstract class ClientMiddleware implements ClientInterface
+abstract class ClientMiddleware implements ClientMiddlewareInterface
 {
     private $next;
 
