@@ -269,7 +269,7 @@ class Engine
      */
     public function createRelatedResource(Resource $baseResource, $url, $type, $method = 'GET')
     {
-        $httpRequest = new Request($url, $method, 'php://memory', ['Referer' => $baseResource->getUri()]);
+        $httpRequest = new Request($url, $method, 'php://memory', ['Referer' => $baseResource->getUrl()]);
         $resource = new Resource($httpRequest, $type);
         return $resource;
     }
@@ -399,7 +399,7 @@ class Engine
     public function run()
     {
         while ($resource = $this->currentResource = $this->getFrontier()->nextResource()) {
-            $this->getLogger()->debug('Loading resource from URL ' . $resource->getUri());
+            $this->getLogger()->debug('Loading resource from URL ' . $resource->getUrl());
             $request = $resource->getHttpRequest();
             $httpResponse = $this->client->load($request);
             $response = new Response($httpResponse);
@@ -452,11 +452,11 @@ class Engine
         Assertion::boolean($force);
 
         if ($this->isVisited($resource) && !$force) {
-            $this->getLogger()->notice("Url {$resource->getUri()} is already visited");
+            $this->getLogger()->notice("Url {$resource->getUrl()} is already visited");
             return;
         }
         if ($this->isScheduled($resource) && !$force) {
-            $this->getLogger()->notice("Url {$resource->getUri()} is already scheduled");
+            $this->getLogger()->notice("Url {$resource->getUrl()} is already scheduled");
             return;
         }
         $this->getFrontier()->populate($resource, $priority);
@@ -532,7 +532,7 @@ class Engine
     {
         $this->getFilter()->add($this->getProject() . 'visited', $resource);
         $this->getFilter()->remove($this->getProject() . 'scheduled', $resource);
-        $this->getLogger()->debug(sprintf('Marked Resource %s as visited', $resource->getUri()));
+        $this->getLogger()->debug(sprintf('Marked Resource %s as visited', $resource->getUrl()));
     }
 
     /**
@@ -550,7 +550,7 @@ class Engine
     public function markScheduled(Resource $resource)
     {
         $this->getFilter()->add($this->getProject() . 'scheduled', $resource);
-        $this->getLogger()->debug(sprintf('Scheduled Resource %s for crawling', $resource->getUri()));
+        $this->getLogger()->debug(sprintf('Scheduled Resource %s for crawling', $resource->getUrl()));
     }
 
     /**
@@ -574,7 +574,7 @@ class Engine
         $this->getLogger()->error(
             sprintf(
                 'Marked Resource %s as failed. HTTP Status %s, content length %s',
-                $resource->getUri(),
+                $resource->getUrl(),
                 $response->getStatusCode(),
                 strlen($response->getBody())
             )
@@ -587,7 +587,7 @@ class Engine
     public function markParsed(Resource $resource)
     {
         $this->getResultsStorage()->populate($resource, ResultsStorageInterface::STATUS_SUCCESS);
-        $this->getLogger()->info(sprintf('Marked Resource %s as parsed.', $resource->getUri()));
+        $this->getLogger()->info(sprintf('Marked Resource %s as parsed.', $resource->getUrl()));
     }
 
     /**
@@ -597,6 +597,6 @@ class Engine
     {
         $this->getFilter()->remove($this->getProject() . 'scheduled', $resource);
         $this->getResultsStorage()->populate($resource, ResultsStorageInterface::STATUS_PARSE_ERROR);
-        $this->getLogger()->critical(sprintf('Marked Resource %s as NOT parsed.', $resource->getUri()));
+        $this->getLogger()->critical(sprintf('Marked Resource %s as NOT parsed.', $resource->getUrl()));
     }
 }

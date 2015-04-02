@@ -29,6 +29,11 @@ class Resource
         $this->httpRequest = $httpRequest;
     }
 
+    public function getUrl()
+    {
+        return (string) $this->httpRequest->getUri();
+    }
+
     /**
      * @return Request
      */

@@ -62,9 +62,13 @@ class Guzzle implements ClientInterface
         return $this->proxy;
     }
 
+    /**
+     * @return mixed|null
+     */
     public function nextProxy()
     {
-        return $this->getProxy()->nextProxy();
+        $proxy = $this->getProxy();
+        return $proxy? $proxy->nextProxy() : null;
     }
 
 
