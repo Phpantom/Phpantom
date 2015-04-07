@@ -56,7 +56,8 @@ class Resource
      */
     public function getHash()
     {
-        return sha1(json_encode((array)$this));
+        $data = ['type'=> $this->type, 'meta'=>$this->meta, 'url'=>(string) $this->getHttpRequest()->getUri()];
+        return sha1(json_encode($data));
     }
 
     /**
@@ -95,6 +96,11 @@ class Resource
      */
     public function __call($method, $params = [])
     {
-        return call_user_func_array([$this->httpRequest, $method], $params);
+        $result = call_user_func_array([$this->httpRequest, $method], $params);
+        if (0 === strpos($method, 'with')) {
+            $this->httpRequest = $result;
+            return $this;
+        }
+        return $result;
     }
 }

@@ -62,4 +62,9 @@ class Storage
     {
         $this->adapter->delete($resource);
     }
+
+    public function clean()
+    {
+        $this->adapter->clean();
+    }
 }

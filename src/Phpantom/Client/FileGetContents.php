@@ -52,7 +52,7 @@ class FileGetContents implements ClientInterface
         $headersList = [];
         //'header'=>'Connection: close' @see http://php.net/manual/en/function.file-get-contents.php comments
         foreach ($request->getHeaders() as $key => $val) {
-            $headersList[] = "$key: $val";
+            $headersList[] = "$key: " . implode(", ", $val);
         }
         $opts = array('http' =>
             array(

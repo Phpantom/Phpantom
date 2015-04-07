@@ -35,21 +35,12 @@ class Response
      */
     public function __call($method, $params = [])
     {
-        return call_user_func_array([$this->httpResponse, $method], $params);
+        $response = call_user_func_array([$this->httpResponse, $method], $params);
+        if (0 === strpos($method, 'with')) {
+            $this->httpResponse = $response;
+            return $this;
+        }
+        return $response;
     }
 
-//    /**
-//     * Proxy
-//     * @param $method
-//     * @param array $params
-//     * @return mixed
-//     */
-//    public function __call($method, $params = [])
-//    {
-//        $response =  call_user_func_array([$this->httpResponse, $method], $params);
-//        if (! ($response instanceof $this)) {
-//            return new self($response);
-//        }
-//        return $response;
-//    }
 }

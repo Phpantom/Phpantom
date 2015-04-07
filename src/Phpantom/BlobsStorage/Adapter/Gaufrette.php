@@ -182,4 +182,14 @@ class Gaufrette implements AdapterInterface
     {
         $this->getFilesystem()->delete($this->getPath($resource));
     }
+
+    /**
+     *
+     */
+    public function clean()
+    {
+        foreach($this->keys() as $key) {
+            $this->getFilesystem()->delete($key);
+        }
+    }
 }

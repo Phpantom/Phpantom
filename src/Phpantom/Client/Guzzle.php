@@ -78,11 +78,15 @@ class Guzzle implements ClientInterface
      */
     public function load(RequestInterface $request)
     {
+        $headers = [];
+        foreach ($request->getHeaders() as $key => $val) {
+            $headers[$key] = implode(", ", $val);
+        }
         $request = $this->client->createRequest(
             $request->getMethod()?: 'GET',
             $request->getUri(),
             [
-                'headers' => $request->getHeaders(),
+                'headers' => $headers,
                 'proxy' => $this->nextProxy()
             ]
         );

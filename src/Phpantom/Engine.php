@@ -173,6 +173,14 @@ class Engine
     }
 
     /**
+     * @return \Phpantom\BlobsStorage\Storage
+     */
+    public function getBlobsStorage()
+    {
+        return $this->blobsStorage;
+    }
+
+    /**
      * @return ClientInterface
      */
     public function getClient()
@@ -405,7 +413,7 @@ class Engine
             $response = new Response($httpResponse);
 
             if (($response->getStatusCode() === 200 || $response->getStatusCode() === 408)
-                && strlen($response->getBody())
+                && strlen($response->getContent())
             ) {
                 if ($this->clearErrorsOnSuccess) {
                     $this->httpFails = 0;
@@ -517,13 +525,11 @@ class Engine
     }
 
     /**
-     * @param string|null $root
      */
-//    public function clearBlobs($root = null)
-//    {
-//        $filesystem = new FileSystem($root);
-//        $filesystem->clean($root);
-//    }
+    public function clearBlobs()
+    {
+        $this->getBlobsStorage()->clean();
+    }
 
     /**
      * @param Resource $resource
