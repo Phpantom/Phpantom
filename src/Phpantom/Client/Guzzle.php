@@ -93,12 +93,24 @@ class Guzzle implements ClientInterface
         );
         try {
             $guzzleResponse = $this->client->send($request);
+            $code = $guzzleResponse->getStatusCode();
+            $headers = $guzzleResponse->getHeaders();
+            $contents = $guzzleResponse->getBody()->getContents();
         } catch (TransferException $e) {
-            $guzzleResponse = $e->getResponse();
+            if (is_callable([$e, 'getResponse']) && ($guzzleResponse = $e->getResponse())) {
+                $code = $guzzleResponse->getStatusCode();
+                $headers = $guzzleResponse->getHeaders();
+                $contents = $guzzleResponse->getBody()->getContents();
+            } else {
+                $code = '500';
+                $headers = [];
+                $contents = '';
+            }
         }
-        $httpResponse = new HttpResponse('php://memory', $guzzleResponse->getStatusCode(), $guzzleResponse->getHeaders());
+
+        $httpResponse = new HttpResponse('php://memory', $code, $headers);
         $httpResponse->getBody()
-            ->write($guzzleResponse->getBody()->getContents());
+            ->write($contents);
         return $httpResponse;
     }
 }
