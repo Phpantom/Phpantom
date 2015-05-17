@@ -3,6 +3,7 @@
 namespace Phpantom\Client;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\TransferException;
 use Phly\Http\Response as HttpResponse;
 use Psr\Http\Message\RequestInterface;
 
@@ -92,7 +93,7 @@ class Guzzle implements ClientInterface
         );
         try {
             $guzzleResponse = $this->client->send($request);
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
+        } catch (TransferException $e) {
             $guzzleResponse = $e->getResponse();
         }
         $httpResponse = new HttpResponse('php://memory', $guzzleResponse->getStatusCode(), $guzzleResponse->getHeaders());
