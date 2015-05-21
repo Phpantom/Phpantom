@@ -4,7 +4,7 @@ namespace Phpantom\Client;
 
 use Psr\Http\Message\RequestInterface;
 
-abstract class ClientMiddleware implements ClientMiddlewareInterface
+abstract class ClientMiddleware implements ClientMiddlewareInterface, ClientInterface
 {
     private $next;
 
@@ -22,6 +22,14 @@ abstract class ClientMiddleware implements ClientMiddlewareInterface
     public function getNext()
     {
         return $this->next;
+    }
+
+    /**
+     * @param Proxy $proxy
+     */
+    public function setProxy(Proxy $proxy)
+    {
+
     }
 
 }

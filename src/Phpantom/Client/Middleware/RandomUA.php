@@ -3,6 +3,7 @@
 namespace Phpantom\Client\Middleware;
 
 use Phpantom\Client\ClientMiddleware;
+use Phpantom\Rotator;
 use Psr\Http\Message\RequestInterface;
 
 /**
