@@ -3,7 +3,7 @@
 namespace Phpantom\Client;
 
 use Assert\Assertion;
-use Phly\Http\Response as HttpResponse;
+use Zend\Diactoros\Response as HttpResponse;
 use Psr\Http\Message\RequestInterface;
 
 class FileGetContents implements ClientInterface

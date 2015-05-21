@@ -3,7 +3,7 @@
 namespace Phpantom\Client\Middleware\Cache;
 
 use Assert\Assertion;
-use Phly\Http\Response;
+use Zend\Diactoros\Response;
 use Phpantom\Client\Middleware\Cache;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;

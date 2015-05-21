@@ -4,7 +4,7 @@ namespace Phpantom\Client;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\TransferException;
-use Phly\Http\Response as HttpResponse;
+use Zend\Diactoros\Response as HttpResponse;
 use Psr\Http\Message\RequestInterface;
 
 /**
@@ -165,6 +165,5 @@ class Guzzle implements ClientInterface
     {
         return $this->config;
     }
-
 
 }

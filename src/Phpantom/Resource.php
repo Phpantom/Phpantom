@@ -2,7 +2,7 @@
 namespace Phpantom;
 
 use Assert\Assertion;
-use Phly\Http\Request;
+use Zend\Diactoros\Request;
 
 class Resource
 {
@@ -18,7 +18,7 @@ class Resource
     private $type;
 
     /**
-     * @var \Phly\Http\Request
+     * @var Request
      */
     private $httpRequest;
 

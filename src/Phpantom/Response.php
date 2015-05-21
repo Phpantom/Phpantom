@@ -1,12 +1,12 @@
 <?php
 namespace Phpantom;
 
-use Phly\Http\Response as HttpResponse;
+use Zend\Diactoros\Response as HttpResponse;
 
 class Response
 {
     /**
-     * @var \Phly\Http\Response
+     * @var Response
      */
     private $httpResponse;
 
@@ -27,6 +27,7 @@ class Response
     {
         return (string) $this->getHttpResponse()->getBody();
     }
+
     /**
      * Proxy
      * @param $method

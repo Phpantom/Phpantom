@@ -4,7 +4,7 @@ namespace Phpantom\Client;
 
 use Assert\Assertion;
 use Psr\Http\Message\RequestInterface;
-use Phly\Http\Response as HttpResponse;
+use Zend\Diactoros\Response as HttpResponse;
 
 /**
  * Class Casper

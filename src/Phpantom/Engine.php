@@ -3,7 +3,7 @@
 namespace Phpantom;
 
 use Assert\Assertion;
-use Phly\Http\Request;
+use Zend\Diactoros\Request;
 use Phpantom\BlobsStorage\Storage;
 use Phpantom\Client\ClientInterface;
 use Phpantom\Document\DocumentInterface;
