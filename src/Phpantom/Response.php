@@ -6,7 +6,7 @@ use Zend\Diactoros\Response as HttpResponse;
 class Response
 {
     /**
-     * @var Response
+     * @var HttpResponse
      */
     private $httpResponse;
 
