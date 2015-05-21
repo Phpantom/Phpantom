@@ -8,7 +8,9 @@ $stream->setFormatter($formatter);
 $logger = new \Monolog\Logger('PHANTOM');
 $logger->pushHandler($stream);
 
-$client = new Phpantom\Client\Casper();
+//$client = new Phpantom\Client\Casper();
+//$client = new Phpantom\Client\Guzzle();
+$client = new Phpantom\Client\FileGetContents();
 
 $storage = new \MongoDB(new \MongoClient(), 'mongo_test');
 
@@ -34,7 +36,7 @@ $resource = $engine->createResource('http://www.kisll.ru/site/products', 'list')
 $engine->populateFrontier($resource, \Phpantom\Frontier\FrontierInterface::PRIORITY_NORMAL, true);
 
 $engine->addHandler('list', function(\Phpantom\Response $response, \Phpantom\Resource $resource) use ($engine){
-        $crawler = new \Phpantom\Crawler((string)$response->getBody());
+        $crawler = new \Phpantom\Crawler((string)$response->getContent());
         echo $crawler->filter('title')->text();
     });
 

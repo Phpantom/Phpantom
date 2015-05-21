@@ -54,7 +54,7 @@ class Casper implements ClientInterface
      */
     public function isDebug()
     {
-        return 'true' === $this->debug? true : false;
+        return 'true' === $this->debug ? true : false;
     }
 
     /**
@@ -63,7 +63,8 @@ class Casper implements ClientInterface
      * @param array $options
      * @return $this
      */
-    public function setOptions(array $options) {
+    public function setOptions(array $options)
+    {
         $this->options = $options;
         return $this;
     }
@@ -97,11 +98,11 @@ class Casper implements ClientInterface
             $url = $request->getUri();
             $method = strtolower($request->getMethod());
             $headersList = [];
-            foreach ($request->getHeaders() as $key=>$val) {
+            foreach ($request->getHeaders() as $key => $val) {
                 $headersList[$key] = implode(', ', $val);
             }
-            $headers = json_encode($headersList?: [],  JSON_FORCE_OBJECT);
-            $userAgent = isset($headers['User-Agent'])? $headers['User-Agent'] : $this->defaultUserAgent;
+            $headers = json_encode($headersList ? : [], JSON_FORCE_OBJECT);
+            $userAgent = isset($headers['User-Agent']) ? $headers['User-Agent'] : $this->defaultUserAgent;
 
             $script = <<<SCRIPT
 var casper = require('casper').create({
@@ -147,7 +148,7 @@ casper.run();
 SCRIPT;
 
         }
-        $filename = tempnam(sys_get_temp_dir(),'phpantom-casperjs');
+        $filename = tempnam(sys_get_temp_dir(), 'phpantom-casperjs');
         file_put_contents($filename, $script);
         $options = '';
         foreach ($this->options as $option => $value) {
@@ -164,7 +165,8 @@ SCRIPT;
         }
         $httpResponse->getBody()->write($content);
         if ($json && ($meta = json_decode(trim($json)))) {
-            foreach($meta->headers as $header) {
+            foreach ($meta->headers as $header) {
+                $header->value = explode("\n", $header->value);
                 $httpResponse = $httpResponse->withAddedHeader($header->name, $header->value);
             }
             $status = intval($meta->status);
