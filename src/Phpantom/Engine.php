@@ -532,7 +532,7 @@ class Engine
     }
 
     /**
-     * @param Resource $resource
+     * @param \Phpantom\Resource|Resource $resource
      */
     public function markVisited(Resource $resource)
     {
@@ -605,4 +605,24 @@ class Engine
         $this->getResultsStorage()->populate($resource, ResultsStorageInterface::STATUS_PARSE_ERROR);
         $this->getLogger()->critical(sprintf('Marked Resource %s as NOT parsed.', $resource->getUrl()));
     }
+
+    /**
+     * @param int $maxHttpFails
+     * @return $this
+     */
+    public function setMaxHttpFails($maxHttpFails)
+    {
+        Assertion::integer($maxHttpFails);
+        $this->maxHttpFails = $maxHttpFails;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMaxHttpFails()
+    {
+        return $this->maxHttpFails;
+    }
+
 }

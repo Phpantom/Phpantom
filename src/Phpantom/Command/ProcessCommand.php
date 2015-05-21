@@ -60,7 +60,7 @@ class ProcessCommand extends Command
         $project = strtolower($input->getArgument('project'));
         $loader->load( $project . '.xml');
 
-        $class = '\Phantom\Processor\\' . ucfirst(strtolower($processor));
+        $class = '\Phpantom\Processor\\' . ucfirst(strtolower($processor));
         $storage = $container->get('document_storage');
 
         if (!class_exists($class)) {

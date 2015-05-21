@@ -24,29 +24,49 @@ class Guzzle implements ClientInterface
      */
     private $proxy;
 
+    private $requestsPerInstance = 10;
+
+    private $requestsNumber = 0;
+
+    private $config = [
+        'defaults' => [
+            'timeout' => 10,
+            'allow_redirects' => [
+                'max' => 5,
+                'strict' => false,
+                'referer' => true,
+                'protocols' => ['http', 'https']
+            ],
+            'cookies' => true,
+            'stream' => false,
+            'future' => false
+        ]
+    ];
+
+    /**
+     * @param int $requestsPerInstance
+     * @return $this
+     */
+    public function setRequestsPerInstance($requestsPerInstance)
+    {
+        $this->requestsPerInstance = $requestsPerInstance;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getRequestsPerInstance()
+    {
+        return $this->requestsPerInstance;
+    }
+
     /**
      * Constructor
      */
     public function __construct()
     {
-        if (!isset ($this->client)) {
-            $this->client = new Client([
-                    'defaults' => [
-                        'timeout' => 10,
-                        'allow_redirects' => [
-                            'max' => 5,
-                            'strict' => false,
-                            'referer' => true,
-                            'protocols' => ['http', 'https']
-                        ],
-                        //'proxy'   => 'tcp://localhost:8888',
-                        'cookies' => true,
-                        'stream' => false,
-                        'future' => false
-                    ]
-                ]
-            );
-        }
+        $this->client = $this->getInstance();
     }
 
     public function setProxy(Proxy $proxy)
@@ -69,9 +89,17 @@ class Guzzle implements ClientInterface
     public function nextProxy()
     {
         $proxy = $this->getProxy();
-        return $proxy? $proxy->nextProxy() : null;
+        return $proxy ? $proxy->nextProxy() : null;
     }
 
+
+    protected function getClient()
+    {
+        if ($this->requestsNumber && (0 === $this->requestsNumber % $this->requestsPerInstance)) {
+            $this->client = $this->getInstance();
+        }
+        return $this->client;
+    }
 
     /**
      * @param RequestInterface $request
@@ -79,12 +107,13 @@ class Guzzle implements ClientInterface
      */
     public function load(RequestInterface $request)
     {
+        $this->requestsNumber++;
         $headers = [];
         foreach ($request->getHeaders() as $key => $val) {
             $headers[$key] = implode(", ", $val);
         }
         $request = $this->client->createRequest(
-            $request->getMethod()?: 'GET',
+            $request->getMethod() ? : 'GET',
             $request->getUri(),
             [
                 'headers' => $headers,
@@ -113,4 +142,29 @@ class Guzzle implements ClientInterface
             ->write($contents);
         return $httpResponse;
     }
+
+    protected function getInstance()
+    {
+        return new Client($this->getConfig());
+    }
+
+    /**
+     * @param array $config
+     * @return $this
+     */
+    public function setConfig($config)
+    {
+        $this->config = $config;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getConfig()
+    {
+        return $this->config;
+    }
+
+
 }
