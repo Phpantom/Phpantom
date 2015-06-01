@@ -45,6 +45,11 @@ class Engine
     /**
      *
      */
+    const MODE_NEW_ONLY = 'new_only';
+
+    /**
+     *
+     */
     const EVENT_FETCH_SUCCESS = 'fetch_success';
     /**
      *
@@ -122,6 +127,10 @@ class Engine
      */
     private $clearErrorsOnSuccess = false;
 
+    private $mode;
+
+
+
     /**
      * @param ClientInterface $client
      * @param FrontierInterface $frontier
@@ -154,6 +163,24 @@ class Engine
                 }
             }
         );
+    }
+
+    /**
+     * @param mixed $mode
+     * @return $this
+     */
+    public function setMode($mode)
+    {
+        $this->mode = $mode;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMode()
+    {
+        return $this->mode;
     }
 
     /**
@@ -261,6 +288,7 @@ class Engine
         $this->bindResourceToDoc($boundResource, $docType, $docId);
         return $boundResource;
     }
+
 
     public function getBoundDocument(Resource $resource)
     {
@@ -403,9 +431,11 @@ class Engine
 
     /**
      * Main entry point
+     * @param string $mode
      */
-    public function run()
+    public function run($mode = self::MODE_START)
     {
+        $this->mode = $mode;
         while ($resource = $this->currentResource = $this->getFrontier()->nextResource()) {
             $this->getLogger()->debug('Loading resource from URL ' . $resource->getUrl());
             $request = $resource->getHttpRequest();
@@ -458,17 +488,26 @@ class Engine
     {
         Assertion::inArray($priority, [FrontierInterface::PRIORITY_NORMAL, FrontierInterface::PRIORITY_HIGH]);
         Assertion::boolean($force);
-
-        if ($this->isVisited($resource) && !$force) {
-            $this->getLogger()->notice("Url {$resource->getUrl()} is already visited");
-            return;
-        }
         if ($this->isScheduled($resource) && !$force) {
             $this->getLogger()->notice("Url {$resource->getUrl()} is already scheduled");
             return;
         }
+
+        if ($this->isVisited($resource) && !$force && !$this->canContainLinksToNewResources($resource)) {
+            $this->getLogger()->notice("Url {$resource->getUrl()} is already visited");
+            return;
+        }
         $this->getFrontier()->populate($resource, $priority);
         $this->markScheduled($resource);
+    }
+
+    /**
+     * @param \Phpantom\Resource|Resource $resource
+     * @return bool
+     */
+    private function canContainLinksToNewResources(Resource $resource)
+    {
+        return (bool)preg_match('~!$~s', $resource->getType());
     }
 
     /**

@@ -28,7 +28,7 @@ class CrawlCommand extends Command
             ->addArgument(
                 'mode',
                 InputArgument::OPTIONAL,
-                'Crawl mode: start (default), restart, refresh?',
+                'Crawl mode: start (default), restart, full_restart, refresh_only, refresh_with_new, new_only?',
                 Engine::MODE_START
             )
             ->addOption(

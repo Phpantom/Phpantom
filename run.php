@@ -9,8 +9,8 @@ $logger = new \Monolog\Logger('PHANTOM');
 $logger->pushHandler($stream);
 
 //$client = new Phpantom\Client\Casper();
-//$client = new Phpantom\Client\Guzzle();
-$client = new Phpantom\Client\FileGetContents();
+$client = new \Phpantom\Client\Middleware\RandomUA( new Phpantom\Client\Guzzle());
+//$client = new Phpantom\Client\FileGetContents();
 
 $storage = new \MongoDB(new \MongoClient(), 'mongo_test');
 
@@ -32,7 +32,8 @@ $blobsStorage = new Phpantom\BlobsStorage\Storage(new \Phpantom\BlobsStorage\Ada
 
 $engine = new \Phpantom\Engine($client, $frontier, $filter, $resultsStorage, $blobsStorage, $documentsStorage, $logger);
 
-$resource = $engine->createResource('http://www.kisll.ru/site/products', 'list');
+$resource = $engine->createResource('http://www.pulscen.by', 'list');
+$engine->populateFrontier($resource, \Phpantom\Frontier\FrontierInterface::PRIORITY_NORMAL, true);
 $engine->populateFrontier($resource, \Phpantom\Frontier\FrontierInterface::PRIORITY_NORMAL, true);
 
 $engine->addHandler('list', function(\Phpantom\Response $response, \Phpantom\Resource $resource) use ($engine){

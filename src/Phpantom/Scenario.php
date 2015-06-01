@@ -18,6 +18,8 @@ use Psr\Log\LoggerInterface;
  */
 abstract class Scenario
 {
+    use LoggerAwareTrait;
+
     /**
      * @var Engine
      */
@@ -26,6 +28,7 @@ abstract class Scenario
      * @var string
      */
     protected $name;
+
 
     /**
      * @param ClientInterface $client
@@ -40,8 +43,14 @@ abstract class Scenario
         ResultsStorageInterface $resultsStorage, Storage $blobsStorage, DocumentInterface $documentsStorage,
         LoggerInterface $logger)
     {
+        register_shutdown_function(
+            function () {
+                $this->unlock();
+            }
+        );
         $chunks = explode('\\', strtolower(get_class($this)));
         $this->name = array_pop($chunks);
+        $this->logger = $logger;
         $this->engine = new \Phpantom\Engine($client, $frontier, $filter, $resultsStorage, $blobsStorage,
             $documentsStorage, $logger);
 
@@ -118,6 +127,36 @@ abstract class Scenario
 
     }
 
+    public function lock()
+    {
+        $lockFile = $this->getLockFile();
+        if (!file_exists($lockFile)) {
+            $this->logger->debug('Obtaining lock');
+            file_put_contents($lockFile, time());
+            $this->logger->debug('Scenario was successfully locked');
+        } else {
+            throw new \RuntimeException("Scenario {$this->getName()} is locked");
+        }
+    }
+
+    public function unlock()
+    {
+        $lockFile = $this->getLockFile();
+        if (file_exists($lockFile)) {
+            $this->logger->debug('Releasing lock');
+            if (@unlink($lockFile)) {
+                $this->logger->debug("Scenario {$this->getName()} is unlocked");
+            } else {
+                $this->logger->critical("Can't release lock!");
+            }
+        }
+    }
+
+    protected function getLockFile()
+    {
+        return sys_get_temp_dir() . '/' .  $this->getName();
+    }
+
     /**
      * @param $mode
      */
@@ -140,11 +179,16 @@ abstract class Scenario
                 break;
             case Engine::MODE_RESTART:
                 $this->getEngine()->clearFailed();
+                //@todo copy failed resources to frontier
                 $this->getEngine()->clearFrontier();
                 $this->initFrontier();
                 break;
             case Engine::MODE_REFRESH_ONLY:
             case Engine::MODE_REFRESH_WITH_NEW:
+                break;
+            case Engine::MODE_NEW_ONLY:
+                $this->getEngine()->clearScheduled();
+                $this->initFrontier();
                 break;
         }
 
@@ -154,7 +198,15 @@ abstract class Scenario
         $this->registerEventHandlers();
 
         $engine = $this->getEngine();
-        $engine->run();
+        try {
+            $this->lock();
+            $engine->run($mode);
+            $this->unlock();
+        } catch (\Exception $e) {
+            $this->logger->critical($e->getMessage());
+            exit(1);
+        }
+
     }
 
 }
