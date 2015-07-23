@@ -472,7 +472,7 @@ class RandomUA extends ClientMiddleware
     public function load(RequestInterface $resource)
     {
         $resource = $resource->withAddedHeader(
-            "User-Agent", $this->rotate([$this, 'getRandomUserAgent'])
+            "User-Agent", (string) $this->rotate([$this, 'getRandomUserAgent'])
         );
         $response = $this->getNext()->load($resource);
         return $response;

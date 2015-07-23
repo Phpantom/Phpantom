@@ -63,12 +63,12 @@ class FileGetContents implements ClientInterface
                 'ignore_errors' => true, //don't throw errors on 404 and so on
                 'request_fulluri' => true,
 //                'protocol_version' => 1.1
-                'proxy' => $this->nextProxy()? : null
+                'proxy' => (string)$this->nextProxy()? : null
             )
         );
 
         $context  = stream_context_create($opts);
-        $data = @file_get_contents($request->getUri(), false, $context);
+        $data = @file_get_contents((string) $request->getUri(), false, $context);
         $httpResponse = new HttpResponse();
         $httpResponse->getBody()->write($data);
         if (!empty($http_response_header)) {

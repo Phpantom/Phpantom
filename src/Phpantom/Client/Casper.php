@@ -95,7 +95,7 @@ class Casper implements ClientInterface
     public function load(RequestInterface $request)
     {
         if (!$script = $this->getScript()) {
-            $url = $request->getUri();
+            $url = (string) $request->getUri();
             $method = strtolower($request->getMethod());
             $headersList = [];
             foreach ($request->getHeaders() as $key => $val) {
@@ -193,7 +193,7 @@ SCRIPT;
     private function applyProxy()
     {
         if (isset($this->proxy)) {
-            $this->options = array_merge($this->options, $this->proxy->nextProxy());
+            $this->options = array_merge($this->options, (string) $this->proxy->nextProxy());
         }
     }
 

@@ -32,7 +32,7 @@ $blobsStorage = new Phpantom\BlobsStorage\Storage(new \Phpantom\BlobsStorage\Ada
 
 $engine = new \Phpantom\Engine($client, $frontier, $filter, $resultsStorage, $blobsStorage, $documentsStorage, $logger);
 
-$resource = $engine->createResource('http://www.pulscen.by', 'list');
+$resource = $engine->createResource('http://www.onliner.by', 'list');
 $engine->populateFrontier($resource, \Phpantom\Frontier\FrontierInterface::PRIORITY_NORMAL, true);
 $engine->populateFrontier($resource, \Phpantom\Frontier\FrontierInterface::PRIORITY_NORMAL, true);
 
@@ -41,4 +41,4 @@ $engine->addHandler('list', function(\Phpantom\Response $response, \Phpantom\Res
         echo $crawler->filter('title')->text();
     });
 
-$engine->run();
+$engine->run(\Phpantom\Engine::MODE_FULL_RESTART);

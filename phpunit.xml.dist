@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<phpunit bootstrap="tests/bootstrap.php" strict="true">
+<phpunit bootstrap="tests/bootstrap.php">
     <testsuites>
         <testsuite name="Phpantom Test Suite">
             <directory>tests/Phpantom/Tests</directory>

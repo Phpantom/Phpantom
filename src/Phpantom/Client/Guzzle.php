@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\TransferException;
 use Zend\Diactoros\Response as HttpResponse;
 use Psr\Http\Message\RequestInterface;
+use GuzzleHttp\Psr7\Request;
 
 /**
  * Class Guzzle
@@ -112,12 +113,12 @@ class Guzzle implements ClientInterface
         foreach ($request->getHeaders() as $key => $val) {
             $headers[$key] = implode(", ", $val);
         }
-        $request = $this->client->createRequest(
+        $request = new Request(
             $request->getMethod() ? : 'GET',
-            $request->getUri(),
+            (string) $request->getUri(),
             [
                 'headers' => $headers,
-                'proxy' => $this->nextProxy()
+                'proxy' => (string) $this->nextProxy()
             ]
         );
         try {
