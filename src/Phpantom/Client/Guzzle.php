@@ -30,18 +30,16 @@ class Guzzle implements ClientInterface
     private $requestsNumber = 0;
 
     private $config = [
-        'defaults' => [
-            'timeout' => 10,
-            'allow_redirects' => [
-                'max' => 5,
-                'strict' => false,
-                'referer' => true,
-                'protocols' => ['http', 'https']
-            ],
-            'cookies' => true,
-            'stream' => false,
-            'future' => false
-        ]
+        'allow_redirects' => [
+            'max'       => 5,
+            'protocols' => ['http', 'https'],
+            'strict'    => false,
+            'referer'   => true
+        ],
+        'http_errors'     => true,
+        'decode_content'  => true,
+        'verify'          => true,
+        'cookies'         => true
     ];
 
     /**
@@ -109,17 +107,15 @@ class Guzzle implements ClientInterface
     public function load(RequestInterface $request)
     {
         $this->requestsNumber++;
-        $headers = [];
-        foreach ($request->getHeaders() as $key => $val) {
-            $headers[$key] = implode(", ", $val);
-        }
         $request = new Request(
             $request->getMethod() ? : 'GET',
             (string) $request->getUri(),
-            [
-                'headers' => $headers,
-                'proxy' => (string) $this->nextProxy()
-            ]
+            $request->getHeaders(),
+            $request->getBody()
+//            [
+//                'headers' => $request->getHeaders(),
+//                'proxy' => (string) $this->nextProxy()
+//            ]
         );
         try {
             $guzzleResponse = $this->client->send($request);
@@ -153,7 +149,7 @@ class Guzzle implements ClientInterface
      * @param array $config
      * @return $this
      */
-    public function setConfig($config)
+    public function setConfig(array $config)
     {
         $this->config = $config;
         return $this;

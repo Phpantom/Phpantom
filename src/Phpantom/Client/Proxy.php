@@ -50,6 +50,9 @@ class Proxy
      */
     private function getProxy()
     {
-        return $this->getProxyList()->next();
+        $this->getProxyList()->next();
+        return $this->getProxyList()->current();
     }
+
+
 }

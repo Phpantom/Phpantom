@@ -58,6 +58,31 @@ class Casper implements ClientInterface
     }
 
     /**
+     * @return array
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getDefaultUserAgent()
+    {
+        return $this->defaultUserAgent;
+    }
+
+    /**
+     * @return Proxy
+     */
+    public function getProxy()
+    {
+        return $this->proxy;
+    }
+
+    /**
      * set specific options to casperJS
      *
      * @param array $options
@@ -102,7 +127,7 @@ class Casper implements ClientInterface
                 $headersList[$key] = implode(', ', $val);
             }
             $headers = json_encode($headersList ? : [], JSON_FORCE_OBJECT);
-            $userAgent = isset($headers['User-Agent']) ? $headers['User-Agent'] : $this->defaultUserAgent;
+            $userAgent = isset($headers['User-Agent']) ? $headers['User-Agent'] : $this->getDefaultUserAgent();
 
             $script = <<<SCRIPT
 var casper = require('casper').create({
@@ -151,7 +176,7 @@ SCRIPT;
         $filename = tempnam(sys_get_temp_dir(), 'phpantom-casperjs');
         file_put_contents($filename, $script);
         $options = '';
-        foreach ($this->options as $option => $value) {
+        foreach ($this->getOptions() as $option => $value) {
             $options .= ' --' . $option . '=' . $value;
         }
         $this->applyProxy();
@@ -193,7 +218,7 @@ SCRIPT;
     private function applyProxy()
     {
         if (isset($this->proxy)) {
-            $this->options = array_merge($this->options, (string) $this->proxy->nextProxy());
+            $this->options = array_merge($this->options, (string) $this->getProxy()->nextProxy());
         }
     }
 

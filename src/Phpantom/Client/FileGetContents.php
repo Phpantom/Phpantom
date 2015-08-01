@@ -58,7 +58,7 @@ class FileGetContents implements ClientInterface
             array(
                 'method'  => $request->getMethod()?: 'GET',
                 'header'  => implode("\r\n", $headersList),
-                'content' => $request->getBody(),
+                'content' => (string) $request->getBody(),
                 'timeout' => $this->getTimeout(),
                 'ignore_errors' => true, //don't throw errors on 404 and so on
                 'request_fulluri' => true,
