@@ -31,15 +31,15 @@ class Guzzle implements ClientInterface
 
     private $config = [
         'allow_redirects' => [
-            'max'       => 5,
+            'max' => 5,
             'protocols' => ['http', 'https'],
-            'strict'    => false,
-            'referer'   => true
+            'strict' => false,
+            'referer' => true
         ],
-        'http_errors'     => true,
-        'decode_content'  => true,
-        'verify'          => true,
-        'cookies'         => true
+        'http_errors' => true,
+        'decode_content' => true,
+        'verify' => true,
+        'cookies' => true
     ];
 
     /**
@@ -108,17 +108,13 @@ class Guzzle implements ClientInterface
     {
         $this->requestsNumber++;
         $request = new Request(
-            $request->getMethod() ? : 'GET',
-            (string) $request->getUri(),
+            $request->getMethod() ?: 'GET',
+            (string)$request->getUri(),
             $request->getHeaders(),
             $request->getBody()
-//            [
-//                'headers' => $request->getHeaders(),
-//                'proxy' => (string) $this->nextProxy()
-//            ]
         );
         try {
-            $guzzleResponse = $this->client->send($request);
+            $guzzleResponse = $this->getClient()->send($request, ['proxy' => $this->nextProxy()]);
             $code = $guzzleResponse->getStatusCode();
             $headers = $guzzleResponse->getHeaders();
             $contents = $guzzleResponse->getBody()->getContents();
@@ -160,6 +156,7 @@ class Guzzle implements ClientInterface
      */
     public function getConfig()
     {
+
         return $this->config;
     }
 

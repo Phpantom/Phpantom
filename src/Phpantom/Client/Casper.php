@@ -128,8 +128,93 @@ class Casper implements ClientInterface
             }
             $headers = json_encode($headersList ? : [], JSON_FORCE_OBJECT);
             $userAgent = isset($headers['User-Agent']) ? $headers['User-Agent'] : $this->getDefaultUserAgent();
+            $json = (string) $request->getBody();
+            if ($this->isValidJson($json)) {
+                $script = $this->getDefaultScript(
+                    $userAgent,
+                    $url,
+                    $method,
+                    $headers,
+                    $json? : 'null'
+                );
+            } else {
+                throw new \InvalidArgumentException("$method data expected to be properly json encoded string");
+            }
+        }
+        $filename = tempnam(sys_get_temp_dir(), 'phpantom-casperjs');
+        file_put_contents($filename, $script);
+        $options = '';
+        foreach ($this->getOptions() as $option => $value) {
+            $options .= ' --' . $option . '=' . $value;
+        }
+        $this->applyProxy();
+        exec('casperjs ' . $filename . $options, $output);
+        $httpResponse = new HttpResponse();
+        $content = '';
+        $json = '';
+        $output = implode('', $output);
+        if (false !== strpos($output, '[PHPANTOM-CASPER-DELIMITER]')) {
+            list ($content, $json) = explode('[PHPANTOM-CASPER-DELIMITER]', $output);
+        }
+        $httpResponse->getBody()->write($content);
+        if ($json && ($meta = json_decode(trim($json)))) {
+            foreach ($meta->headers as $header) {
+                $header->value = explode("\n", $header->value);
+                $httpResponse = $httpResponse->withAddedHeader($header->name, $header->value);
+            }
+            $status = intval($meta->status);
+            $httpResponse = $httpResponse->withAddedHeader('status', strval($status))
+                ->withStatus(intval($status));
+        }
+//        unlink($filename);
+        return $httpResponse;
+    }
 
-            $script = <<<SCRIPT
+    /**
+     * @param Proxy $proxy
+     * @return $this
+     */
+    public function setProxy(Proxy $proxy)
+    {
+        $this->proxy = $proxy;
+        return $this;
+    }
+
+    /**
+     * @return mixed|null
+     */
+    public function nextProxy()
+    {
+        $proxy = $this->getProxy();
+        return $proxy ?  $proxy->nextProxy() : null;
+    }
+
+    private function isValidJson($json)
+    {
+        json_decode($json);
+        return (json_last_error() === JSON_ERROR_NONE);
+    }
+
+    /**
+     * Apply proxy if set
+     */
+    private function applyProxy()
+    {
+        if ($proxy = (string) $this->getProxy()) {
+            $this->options = array_merge($this->options, $proxy);
+        }
+    }
+
+    /**
+     * @param $userAgent
+     * @param $url
+     * @param $method
+     * @param $headers
+     * @return string
+     */
+    protected function getDefaultScript($userAgent, $url, $method, $headers, $data)
+    {
+        $script = <<<SCRIPT
 var casper = require('casper').create({
     verbose: false,
     logLevel: 'error',
@@ -157,7 +242,8 @@ casper.userAgent('{$userAgent}');
 casper.start().then(function() {
     this.open('{$url}', {
         method: '{$method}',
-        headers: $headers
+        headers: $headers,
+        data: $data
     });
     this.then(function(response) {
         this.echo(this.getPageContent());
@@ -171,55 +257,7 @@ casper.start().then(function() {
 casper.run();
 
 SCRIPT;
-
-        }
-        $filename = tempnam(sys_get_temp_dir(), 'phpantom-casperjs');
-        file_put_contents($filename, $script);
-        $options = '';
-        foreach ($this->getOptions() as $option => $value) {
-            $options .= ' --' . $option . '=' . $value;
-        }
-        $this->applyProxy();
-        exec('casperjs ' . $filename . $options, $output);
-        $httpResponse = new HttpResponse();
-        $content = '';
-        $json = '';
-        $output = implode('', $output);
-        if (false !== strpos($output, '[PHPANTOM-CASPER-DELIMITER]')) {
-            list ($content, $json) = explode('[PHPANTOM-CASPER-DELIMITER]', $output);
-        }
-        $httpResponse->getBody()->write($content);
-        if ($json && ($meta = json_decode(trim($json)))) {
-            foreach ($meta->headers as $header) {
-                $header->value = explode("\n", $header->value);
-                $httpResponse = $httpResponse->withAddedHeader($header->name, $header->value);
-            }
-            $status = intval($meta->status);
-            $httpResponse = $httpResponse->withAddedHeader('status', strval($status))
-                ->withStatus(intval($status));
-        }
-
-        return $httpResponse;
-    }
-
-    /**
-     * @param Proxy $proxy
-     * @return $this
-     */
-    public function setProxy(Proxy $proxy)
-    {
-        $this->proxy = $proxy;
-        return $this;
-    }
-
-    /**
-     * Apply proxy if set
-     */
-    private function applyProxy()
-    {
-        if (isset($this->proxy)) {
-            $this->options = array_merge($this->options, (string) $this->getProxy()->nextProxy());
-        }
+        return $script;
     }
 
 }
