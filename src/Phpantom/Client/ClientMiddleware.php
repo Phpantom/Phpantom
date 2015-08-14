@@ -4,7 +4,7 @@ namespace Phpantom\Client;
 
 use Psr\Http\Message\RequestInterface;
 
-abstract class ClientMiddleware implements ClientMiddlewareInterface, ClientInterface
+abstract class ClientMiddleware implements ClientInterface
 {
     private $next;
 
@@ -19,6 +19,15 @@ abstract class ClientMiddleware implements ClientMiddlewareInterface, ClientInte
      */
     abstract public function load(RequestInterface $request);
 
+    /**
+     * @param array $requests
+     * @return mixed
+     */
+    abstract public function loadBatch(array $requests);
+
+    /**
+     * @return ClientInterface
+     */
     public function getNext()
     {
         return $this->next;
@@ -26,6 +35,7 @@ abstract class ClientMiddleware implements ClientMiddlewareInterface, ClientInte
 
     /**
      * @param Proxy $proxy
+     * @return mixed|void
      */
     public function setProxy(Proxy $proxy)
     {

@@ -117,7 +117,7 @@ class Engine
     /**
      * @var int
      */
-    private $httpFails = 0;
+    protected $httpFails = 0;
     /**
      * @var int
      */
@@ -156,6 +156,11 @@ class Engine
         $this->blobsStorage = $blobsStorage;
         $this->storage = $storage;
         $this->logger = $logger;
+        $this->registerShutdownFunction();
+    }
+
+    protected function registerShutdownFunction()
+    {
         register_shutdown_function(
             function () {
                 if (!empty($this->currentResource)) {
@@ -163,6 +168,76 @@ class Engine
                 }
             }
         );
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCurrentResource()
+    {
+        return $this->currentResource;
+    }
+
+    /**
+     * @param mixed $currentResource
+     * @return $this
+     */
+    public function setCurrentResource($currentResource)
+    {
+        $this->currentResource = $currentResource;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getHandlers()
+    {
+        return $this->handlers;
+    }
+
+    /**
+     * @param array $handlers
+     * @return $this
+     */
+    public function setHandlers($handlers)
+    {
+        $this->handlers = $handlers;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getHttpFails()
+    {
+        return $this->httpFails;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isClearErrorsOnSuccess()
+    {
+        return $this->clearErrorsOnSuccess;
+    }
+
+    /**
+     * @param boolean $clearErrorsOnSuccess
+     * @return $this
+     */
+    public function setClearErrorsOnSuccess($clearErrorsOnSuccess)
+    {
+        $this->clearErrorsOnSuccess = (bool) $clearErrorsOnSuccess;
+        return $this;
+    }
+
+    /**
+     * @return LoggerInterface
+     */
+    public function getLogger()
+    {
+        return $this->logger;
     }
 
     /**
@@ -181,14 +256,6 @@ class Engine
     public function getMode()
     {
         return $this->mode;
-    }
-
-    /**
-     * @return \Psr\Log\LoggerInterface
-     */
-    public function getLogger()
-    {
-        return $this->logger;
     }
 
     /**
@@ -245,6 +312,7 @@ class Engine
      */
     public function setProject($project)
     {
+        Assertion::string($project);
         $this->project = $project;
         return $this;
     }

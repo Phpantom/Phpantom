@@ -166,7 +166,7 @@ class Casper implements ClientInterface
             $httpResponse = $httpResponse->withAddedHeader('status', strval($status))
                 ->withStatus(intval($status));
         }
-//        unlink($filename);
+        unlink($filename);
         return $httpResponse;
     }
 
@@ -260,4 +260,13 @@ SCRIPT;
         return $script;
     }
 
+    /**
+     * @param array $requests
+     * @return mixed
+     */
+    public function loadBatch(array $requests)
+    {
+        // parallel --xapply ::: 'sleep 5 && echo "trololo"' 'sleep 5 && echo "fff"' 'echo "assds"' ::: 1### 2### 3###
+        // TODO: Implement loadBatch() method.
+    }
 }

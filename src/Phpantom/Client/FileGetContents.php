@@ -85,4 +85,13 @@ class FileGetContents implements ClientInterface
         }
         return $httpResponse;
     }
+
+    /**
+     * @param array $requests
+     * @return mixed
+     */
+    public function loadBatch(array $requests)
+    {
+        // TODO: Implement loadBatch() method.
+    }
 }

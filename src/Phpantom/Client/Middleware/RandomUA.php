@@ -503,4 +503,12 @@ class RandomUA extends ClientMiddleware
         return $userAgent;
     }
 
+    /**
+     * @param array $requests
+     * @return mixed
+     */
+    public function loadBatch(array $requests)
+    {
+        // TODO: Implement loadBatch() method.
+    }
 }

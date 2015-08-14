@@ -33,4 +33,13 @@ abstract class Cache extends ClientMiddleware implements CacheInterface
         }
         return $response;
     }
+
+    /**
+     * @param array $requests
+     * @return mixed
+     */
+    public function loadBatch(array $requests)
+    {
+        // TODO: Implement loadBatch() method.
+    }
 }

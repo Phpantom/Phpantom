@@ -65,4 +65,12 @@ class Delay extends ClientMiddleware
         return mt_rand($this->minDelay, $this->maxDelay);
     }
 
+    /**
+     * @param array $requests
+     * @return mixed
+     */
+    public function loadBatch(array $requests)
+    {
+        // TODO: Implement loadBatch() method.
+    }
 }

@@ -160,4 +160,12 @@ class Guzzle implements ClientInterface
         return $this->config;
     }
 
+    /**
+     * @param array $requests
+     * @return mixed
+     */
+    public function loadBatch(array $requests)
+    {
+        // TODO: Implement loadBatch() method.
+    }
 }
