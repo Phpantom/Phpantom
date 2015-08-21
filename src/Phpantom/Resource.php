@@ -4,7 +4,7 @@ namespace Phpantom;
 use Assert\Assertion;
 use Zend\Diactoros\Request;
 
-class Resource
+class Resource implements \Serializable
 {
 
     /**
@@ -27,6 +27,11 @@ class Resource
         Assertion::string($type);
         $this->type = $type;
         $this->httpRequest = $httpRequest;
+    }
+
+    public function __sleep()
+    {
+
     }
 
     public function getUrl()
@@ -102,5 +107,38 @@ class Resource
             return $this;
         }
         return $result;
+    }
+
+    /**
+     * (PHP 5 &gt;= 5.1.0)<br/>
+     * String representation of object
+     * @link http://php.net/manual/en/serializable.serialize.php
+     * @return string the string representation of the object or null
+     */
+    public function serialize()
+    {
+        $data = [
+            'meta' => $this->meta,
+            'type' => $this->type,
+            'httpRequest' => Request\Serializer::toString($this->getHttpRequest())
+        ];
+        return serialize($data);
+    }
+
+    /**
+     * (PHP 5 &gt;= 5.1.0)<br/>
+     * Constructs the object
+     * @link http://php.net/manual/en/serializable.unserialize.php
+     * @param string $serialized <p>
+     * The string representation of the object.
+     * </p>
+     * @return void
+     */
+    public function unserialize($serialized)
+    {
+        $data = unserialize($serialized);
+        $this->meta = $data['meta'];
+        $this->type = $data['type'];
+        $this->httpRequest = Request\Serializer::fromString($data['httpRequest']);
     }
 }

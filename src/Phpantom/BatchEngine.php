@@ -55,7 +55,7 @@ class BatchEngine extends Engine
     protected function handleBatch($batch)
     {
         $this->setCurrentBatch($batch);
-        $this->getLogger()->debug('Loading resource batch of URLs');
+        $this->getLogger()->debug('Loading batch of resources');
         $httpResponses = $this->getClient()->loadBatch($batch);
         foreach ($httpResponses as $hash => $httpResponse) {
             $response = new Response($httpResponse);
