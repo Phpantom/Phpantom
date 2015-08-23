@@ -32,6 +32,13 @@ interface DocumentInterface
     public function get($type, $id);
 
     /**
+     * @param $type
+     * @param $id
+     * @return bool
+     */
+    public function exists($type, $id);
+
+    /**
      * @param string $type
      * @param string $id
      * @return mixed

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "7c9a49ef5c491d22192ddc88fb2e3cba",
+    "hash": "ba9098a10b9ff323054bd7548c535dfe",
     "packages": [
         {
             "name": "beberlei/assert",
@@ -482,6 +482,70 @@
             "time": "2015-06-02 13:48:41"
         },
         {
+            "name": "respect/validation",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Respect/Validation.git",
+                "reference": "c39e7fb08c8b14f6a803e196628e9f78d84b45b4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Respect/Validation/zipball/c39e7fb08c8b14f6a803e196628e9f78d84b45b4",
+                "reference": "c39e7fb08c8b14f6a803e196628e9f78d84b45b4",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.6"
+            },
+            "require-dev": {
+                "egulias/email-validator": "~1.2",
+                "malkusch/bav": "~1.0",
+                "mikey179/vfsstream": "^1.5",
+                "phpunit/phpunit": "~4.0",
+                "symfony/validator": "~2.6.9",
+                "zendframework/zend-validator": "~2.3"
+            },
+            "suggest": {
+                "egulias/email-validator": "Strict (RFC compliant) email validation",
+                "ext-bcmath": "Arbitrary Precision Mathematics",
+                "ext-mbstring": "Multibyte String Functions",
+                "fabpot/php-cs-fixer": "Fix PSR2 and other coding style issues",
+                "malkusch/bav": "German bank account validation",
+                "symfony/validator": "Use Symfony validator through Respect\\Validation",
+                "zendframework/zend-validator": "Use Zend Framework validator through Respect\\Validation"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Respect\\Validation\\": "library/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD Style"
+            ],
+            "authors": [
+                {
+                    "name": "Respect/Validation Contributors",
+                    "homepage": "https://github.com/Respect/Validation/graphs/contributors"
+                }
+            ],
+            "description": "The most awesome validation engine ever created for PHP",
+            "homepage": "http://respect.li",
+            "keywords": [
+                "respect",
+                "validation",
+                "validator"
+            ],
+            "time": "2015-08-20 04:38:41"
+        },
+        {
             "name": "symfony/config",
             "version": "2.8.x-dev",
             "source": {
@@ -541,7 +605,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Console/zipball/0a597a6de1122566a7638a0bdc10f1b06d930ab2",
+                "url": "https://api.github.com/repos/symfony/Console/zipball/20d8a69913e1dc3114d24b8eab73abf636f196c4",
                 "reference": "0a597a6de1122566a7638a0bdc10f1b06d930ab2",
                 "shasum": ""
             },
@@ -1960,7 +2024,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Yaml/zipball/d067e47c2be88b62c3e50d1362d959efc46ffefc",
+                "url": "https://api.github.com/repos/symfony/Yaml/zipball/20cecac495b05421d59fc36eaa2bb48864e5c15d",
                 "reference": "d067e47c2be88b62c3e50d1362d959efc46ffefc",
                 "shasum": ""
             },
@@ -2056,7 +2120,8 @@
         "zoya/monolog": 20,
         "zoya/coin": 20,
         "symfony/console": 20,
-        "zendframework/zend-diactoros": 20
+        "zendframework/zend-diactoros": 20,
+        "respect/validation": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

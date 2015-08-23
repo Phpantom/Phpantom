@@ -56,7 +56,7 @@ class Mongo implements DocumentInterface
         unset($data['id']);
         unset($data['_id']);
         $this->storage->documents->update(
-            ['_id'=>$id, '_type'=>$type],
+            ['_id' => $id, '_type' => $type],
             ['$set' => $data]
         );
 
@@ -72,10 +72,12 @@ class Mongo implements DocumentInterface
         Assertion::string($type);
         Assertion::string($id);
 
-        $document = $this->storage->documents->findOne(array(
+        $document = $this->storage->documents->findOne(
+            array(
                 '_id' => $id,
                 '_type' => $type
-            ));
+            )
+        );
 
         if ($document) {
             unset($document['_id']);
@@ -98,7 +100,7 @@ class Mongo implements DocumentInterface
         Assertion::string($id);
 
         $this->storage->documents->remove(
-            ['_id'=>$id, '_type'=>$type],
+            ['_id' => $id, '_type' => $type],
             ['justOne' => true]
         );
     }
@@ -111,10 +113,10 @@ class Mongo implements DocumentInterface
     {
         Assertion::string($type);
 
-        $cursor = $this->storage->documents->find(['_type'=>$type], ['_id']);
+        $cursor = $this->storage->documents->find(['_type' => $type], ['_id']);
         $ids = [];
         foreach ($cursor as $doc) {
-            $ids[] =  $doc['_id'];
+            $ids[] = $doc['_id'];
         }
         return $ids;
     }
@@ -127,7 +129,7 @@ class Mongo implements DocumentInterface
     {
         Assertion::string($type);
 
-        return $this->storage->documents->find(['_type'=>$type], ['_type'=>false, '_id'=>false]);
+        return $this->storage->documents->find(['_type' => $type], ['_type' => false, '_id' => false]);
     }
 
 
@@ -138,8 +140,8 @@ class Mongo implements DocumentInterface
     public function getIterator($type = null)
     {
         Assertion::nullOrString($type);
-        return is_null($type)?
-            $this->storage->documents->find([],['_type'=>false, '_id'=>false]) :
+        return is_null($type) ?
+            $this->storage->documents->find([], ['_type' => false, '_id' => false]) :
             $this->getList($type);
     }
 
@@ -158,9 +160,9 @@ class Mongo implements DocumentInterface
     public function count($type = null)
     {
         Assertion::nullOrString($type);
-        return is_null($type)?
-            $this->storage->documents->count():
-            $this->storage->documents->count(['_type'=>$type]) ;
+        return is_null($type) ?
+            $this->storage->documents->count() :
+            $this->storage->documents->count(['_type' => $type]);
     }
 
     /**
@@ -169,5 +171,15 @@ class Mongo implements DocumentInterface
     public function getTypes()
     {
         return $this->storage->documents->distinct('_type');
+    }
+
+    /**
+     * @param $type
+     * @param $id
+     * @return bool
+     */
+    public function exists($type, $id)
+    {
+        return (bool)$this->storage->documents->count(['_id' => $id, '_type' => $type]);
     }
 }

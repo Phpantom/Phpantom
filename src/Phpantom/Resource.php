@@ -10,7 +10,7 @@ class Resource implements \Serializable
     /**
      * @var array
      */
-    private $meta;
+    private $meta = [];
 
     /**
      * @var string
@@ -86,11 +86,16 @@ class Resource implements \Serializable
     }
 
     /**
-     * @return mixed
+     * @param null $var
+     * @param null $default
+     * @return array|null
      */
-    public function getMeta()
+    public function getMeta($var = null, $default = null)
     {
-        return $this->meta;
+        if (null === $var) {
+            return $this->meta;
+        }
+        return isset($this->meta[$var])? $this->meta[$var] : $default;
     }
 
     /**

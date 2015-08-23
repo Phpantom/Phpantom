@@ -12,6 +12,8 @@ use Phpantom\Frontier\FrontierInterface;
 use Phpantom\ResultsStorage\ResultsStorageInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
+use Respect\Validation\Exceptions\NestedValidationExceptionInterface;
+
 
 /**
  * Class Engine
@@ -130,7 +132,6 @@ class Engine
     private $mode;
 
 
-
     /**
      * @param ClientInterface $client
      * @param FrontierInterface $frontier
@@ -228,7 +229,7 @@ class Engine
      */
     public function setClearErrorsOnSuccess($clearErrorsOnSuccess)
     {
-        $this->clearErrorsOnSuccess = (bool) $clearErrorsOnSuccess;
+        $this->clearErrorsOnSuccess = (bool)$clearErrorsOnSuccess;
         return $this;
     }
 
@@ -361,7 +362,7 @@ class Engine
     public function getBoundDocument(Resource $resource)
     {
         $meta = $resource->getMeta();
-        return $this->getDocument($meta['doc_type'], $meta['doc_id']);
+        return $this->getDocument($meta['item_type'], $meta['item_id']);
     }
 
     /**
@@ -386,7 +387,7 @@ class Engine
      */
     public function bindResourceToDoc(Resource $resource, $docType, $docId)
     {
-        $resource->setMeta(['doc_id' => $docId, 'doc_type' => $docType]);
+        $resource->setMeta(['item_id' => $docId, 'item_type' => $docType]);
     }
 
 
@@ -403,7 +404,7 @@ class Engine
     public function updateBoundDocument(Resource $resource, array $data)
     {
         $meta = $resource->getMeta();
-        $this->updateDocument($meta['doc_type'], $meta['doc_id'], $data);
+        $this->updateDocument($meta['item_type'], $meta['item_id'], $data);
     }
 
     /**
@@ -433,6 +434,16 @@ class Engine
     public function getDocument($type, $id)
     {
         return $this->getStorage()->get($type, $id);
+    }
+
+    /**
+     * @param $type
+     * @param $id
+     * @return bool
+     */
+    public function documentExists($type, $id)
+    {
+        return $this->getStorage()->exists($type, $id);
     }
 
     /**
@@ -488,12 +499,35 @@ class Engine
      * @param $eventName
      * @param Response $response
      * @param \Phpantom\Resource|Resource $resource
-     * @param \Exception $e
      */
-    public function handleEvent($eventName, Response $response, Resource $resource, \Exception $e = null)
+    public function handleEvent($eventName, Response $response, Resource $resource)
     {
         foreach ($this->getEventHandlers($eventName) as $handler) {
+            $handler($response, $resource);
+        }
+    }
+
+    /**
+     * @param Response $response
+     * @param Resource $resource
+     * @param \Exception $e
+     */
+    public function handleException(Response $response, Resource $resource, \Exception $e = null)
+    {
+        foreach ($this->getEventHandlers(self::EVENT_EXCEPTION) as $handler) {
             $handler($response, $resource, $e);
+        }
+    }
+
+    /**
+     * @param Response $response
+     * @param Resource $resource
+     * @param ResultSet $resultSet
+     */
+    public function handleSuccesResult(Response $response, Resource $resource, ResultSet $resultSet)
+    {
+        foreach ($this->getEventHandlers(self::EVENT_PARSE_SUCCESS) as $handler) {
+            $handler($response, $resource, $resultSet);
         }
     }
 
@@ -524,20 +558,54 @@ class Engine
                 try {
                     if ($handler = $this->getHandler($resource->getType())) {
                         /** @var $handler callable */
-                        $handler($response, $resource);
-                        $this->handleEvent(self::EVENT_PARSE_SUCCESS, $response, $resource);
-                        $this->markParsed($resource);
+                        try {
+                            $resultSet = new ResultSet($resource);
+                            $handler($response, $resource, $resultSet);
+                            if ($resultSet->isBlob()) {
+                                $path = $this->getBlobsStorage()->write($resource, $response->getContent());
+                                $oldData = $this->getBoundDocument($resource);
+                                $blobs = [];
+                                if (isset($oldData['blobs'])) {
+                                    $blobs = $oldData['blobs'];
+                                }
+                                $blobs[md5($resource->getUrl())] = $path;
+                                $this->updateBoundDocument($resource, ['blobs' => $blobs]);
+                            } else {
+                                foreach ($resultSet->getResources() as $priority => $resData) {
+                                    foreach ($resData as $newResourceData) {
+                                        $this->populateFrontier(
+                                            $newResourceData['resource'],
+                                            $priority,
+                                            $newResourceData['force']
+                                        );
+                                    }
+                                }
+                                foreach ($resultSet->getItems() as $item) {
+                                    if ($this->documentExists($item->type, $item->id)) {
+                                        $this->updateDocument($item->type, $item->id, $item->asArray());
+                                    } else {
+                                        $this->createDocument($item->type, $item->id, $item->asArray());
+                                    }
+                                }
+                            }
+                            $this->markParsed($resource);
+                            $this->handleSuccesResult($response, $resource, $resultSet);
+                        } catch (NestedValidationExceptionInterface $exception) {
+                            $this->markNotParsed($resource, $exception->getFullMessage());
+                            $this->handleEvent(self::EVENT_PARSE_FAILED, $response, $resource);
+                            $this->handleException($response, $resource, $exception);
+                        }
                     }
                     $this->markVisited($resource);
                 } catch (\Exception $e) {
-                    $this->handleEvent(self::EVENT_EXCEPTION, $response, $resource, $e);
-                    $this->markNotParsed($resource);
+                    $this->markNotParsed($resource, $e->getMessage());
+                    $this->handleException($response, $resource, $e);
                 }
 
             } else {
                 $this->httpFails++;
-                $this->handleEvent(self::EVENT_FETCH_FAILED, $response, $resource);
                 $this->markFailed($resource, $response);
+                $this->handleEvent(self::EVENT_FETCH_FAILED, $response, $resource);
                 if ($this->httpFails > $this->maxHttpFails) {
                     $this->getLogger()->alert('Max number of http fails reached. Exit.');
                     die();
@@ -706,11 +774,13 @@ class Engine
     /**
      * @param \Phpantom\Resource|Resource $resource
      */
-    public function markNotParsed(Resource $resource)
+    public function markNotParsed(Resource $resource, $message = null)
     {
         $this->getFilter()->remove($this->getProject() . 'scheduled', $resource);
         $this->getResultsStorage()->populate($resource, ResultsStorageInterface::STATUS_PARSE_ERROR);
-        $this->getLogger()->critical(sprintf('Marked Resource %s as NOT parsed.', $resource->getUrl()));
+        $this->getLogger()->critical(
+            sprintf('Marked Resource %s as NOT parsed. %s', $resource->getUrl(), is_null($message) ? '' : $message)
+        );
     }
 
     /**

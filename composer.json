@@ -21,7 +21,8 @@
         "symfony/dependency-injection": "~2.4",
         "symfony/config":"~2.4",
         "knplabs/gaufrette": "0.1.*",
-        "zendframework/zend-diactoros": "dev-master"
+        "zendframework/zend-diactoros": "dev-master",
+        "respect/validation": "^1.0@dev"
     },
     "require-dev": {
         "phpunit/phpunit": "~4.0"
