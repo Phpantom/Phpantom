@@ -68,7 +68,7 @@ class Response implements \Serializable
      */
     public function unserialize($serialized)
     {
-        $data = HttpResponse\Serializer::fromString($serialized);
-        $this->httpResponse = $data['httpResponse'];
+        $data = unserialize($serialized);
+        $this->httpResponse = HttpResponse\Serializer::fromString($data['httpResponse']);
     }
 }

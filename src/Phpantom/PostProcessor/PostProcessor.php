@@ -1,14 +1,14 @@
 <?php
 
-namespace Phpantom\Processor;
+namespace Phpantom\PostProcessor;
 
 use Phpantom\Document\DocumentInterface;
 
 /**
- * Class Processor
+ * Class PostProcessor
  * @package Phantom
  */
-abstract class Processor implements ProcessorInterface
+abstract class PostProcessor implements PostProcessorInterface
 {
     /**
      * @var DocumentInterface

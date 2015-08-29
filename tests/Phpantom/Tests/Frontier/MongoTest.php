@@ -4,6 +4,8 @@ namespace Phpantom\Tests\Frontier;
 
 use Phpantom\Frontier\FrontierInterface;
 use Phpantom\Frontier\Mongo;
+use Phpantom\Resource;
+use Zend\Diactoros\Request;
 
 class MongoTest extends \PHPUnit_Framework_TestCase
 {
@@ -26,21 +28,23 @@ class MongoTest extends \PHPUnit_Framework_TestCase
     public function testQueue()
     {
         $this->assertEquals(0, self::$mongo->count());
-        $resource = $this->getMockBuilder('\\Phpantom\\Resource')->disableOriginalConstructor()->getMock();
-        $resource2 = $this->getMockBuilder('\\Phpantom\\Resource')->disableOriginalConstructor()->getMock();
-        $resource3 = $this->getMockBuilder('\\Phpantom\\Resource')->disableOriginalConstructor()->getMock();
+        $resource = new Resource(new Request('/', 'GET'), 'foo');
+        $resource2 = new Resource(new Request('/', 'GET'), 'bar');
+        $resource3 = new Resource(new Request('/', 'GET'), 'baz');
         self::$mongo->populate($resource);
         self::$mongo->populate($resource2);
 
         $this->assertEquals(2, self::$mongo->count());
         $resourceFromFrontier = self::$mongo->nextResource();
-        $this->assertEquals($resource, $resourceFromFrontier);
+        $this->assertEquals($resource->getType(), $resourceFromFrontier->getType());
+        $this->assertEquals($resource->getUrl(), $resourceFromFrontier->getUrl());
         $this->assertEquals(1, self::$mongo->count());
 
         self::$mongo->populate($resource3, FrontierInterface::PRIORITY_HIGH);
 
         $resourceFromFrontier = self::$mongo->nextResource();
-        $this->assertEquals($resource3, $resourceFromFrontier);
+        $this->assertEquals($resource3->getType(), $resourceFromFrontier->getType());
+        $this->assertEquals($resource3->getUrl(), $resourceFromFrontier->getUrl());
 
         self::$mongo->clear();
         $this->assertEquals(0, self::$mongo->count());

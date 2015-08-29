@@ -560,7 +560,7 @@ class Engine
                         /** @var $handler callable */
                         try {
                             $resultSet = new ResultSet($resource);
-                            $handler($response, $resource, $resultSet);
+                            call_user_func($handler, $response, $resource, $resultSet);
                             if ($resultSet->isBlob()) {
                                 $path = $this->getBlobsStorage()->write($resource, $response->getContent());
                                 $oldData = $this->getBoundDocument($resource);

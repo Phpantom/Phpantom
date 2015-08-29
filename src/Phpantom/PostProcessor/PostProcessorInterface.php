@@ -1,12 +1,12 @@
 <?php
 
-namespace Phpantom\Processor;
+namespace Phpantom\PostProcessor;
 
 /**
- * Interface ProcessorInterface
+ * Interface PostProcessorInterface
  * @package Phantom
  */
-interface ProcessorInterface
+interface PostProcessorInterface
 {
     /**
      * @param array $document

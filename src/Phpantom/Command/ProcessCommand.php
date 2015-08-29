@@ -12,16 +12,16 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 
-class ProcessCommand extends Command
+class PostProcessCommand extends Command
 {
-    const PROCESSOR_CONSOLE = 'console';
-    const PROCESSOR_CSV = 'csv';
+    const POST_PROCESSOR_CONSOLE = 'console';
+    const POST_PROCESSOR_CSV = 'csv';
 
     protected function configure()
     {
         $this
-            ->setName('processor')
-            ->setDescription('Process documents')
+            ->setName('post_processor')
+            ->setDescription('Post process documents')
             ->addArgument(
                 'project',
                 InputArgument::REQUIRED,
@@ -33,10 +33,10 @@ class ProcessCommand extends Command
                 'Document type'
             )
             ->addArgument(
-                'processor',
+                'post_processor',
                 InputArgument::OPTIONAL,
-                'Processor name',
-                self::PROCESSOR_CONSOLE
+                'Post processor name',
+                self::POST_PROCESSOR_CONSOLE
             )
             ->addArgument(
                 'params',
@@ -49,7 +49,7 @@ class ProcessCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $type = $input->getArgument('doc_type');
-        $processor = $input->getArgument('processor');
+        $processor = $input->getArgument('post_processor');
         $paramsArr = $input->getArgument('params');
         $params = [];
 
@@ -60,7 +60,7 @@ class ProcessCommand extends Command
         $project = strtolower($input->getArgument('project'));
         $loader->load( $project . '.xml');
 
-        $class = '\Phpantom\Processor\\' . ucfirst(strtolower($processor));
+        $class = '\Phpantom\PostProcessor\\' . ucfirst(strtolower($processor));
         $storage = $container->get('document_storage');
 
         if (!class_exists($class)) {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Phantom\Tests\Processor;
+namespace Phantom\Tests\PostProcessor;
 
 class CsvTest extends \PHPUnit_Framework_TestCase
 {
@@ -15,7 +15,7 @@ class CsvTest extends \PHPUnit_Framework_TestCase
 
     public function testProcess()
     {
-        $processor = $this->getMockBuilder('Phpantom\Processor\Csv')
+        $processor = $this->getMockBuilder('Phpantom\PostProcessor\Csv')
             ->disableOriginalConstructor()
             ->setMethods(null)
             ->getMock();

@@ -1,6 +1,6 @@
 <?php
 
-namespace Phpantom\Processor;
+namespace Phpantom\PostProcessor;
 
 use Assert\Assertion;
 
@@ -9,7 +9,7 @@ use Assert\Assertion;
  * Class Csv
  * @package Phpantom
  */
-class Csv extends Processor
+class Csv extends PostProcessor
 {
     /**
      * @var

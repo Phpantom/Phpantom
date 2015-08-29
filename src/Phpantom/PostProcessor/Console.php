@@ -1,12 +1,12 @@
 <?php
 
-namespace Phpantom\Processor;
+namespace Phpantom\PostProcessor;
 
 /**
  * Class Console
- * @package Phpantom\Processor
+ * @package Phpantom\PostProcessor
  */
-class Console extends Processor
+class Console extends PostProcessor
 {
     /**
      * @param array $document

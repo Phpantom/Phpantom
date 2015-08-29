@@ -2,8 +2,10 @@
 
 namespace Phpantom\Tests\ResultsStorage;
 
+use Phpantom\Resource;
 use Phpantom\ResultsStorage\Mongo;
 use Phpantom\ResultsStorage\ResultsStorageInterface;
+use Zend\Diactoros\Request;
 
 class MongoTest extends \PHPUnit_Framework_TestCase
 {
@@ -27,23 +29,25 @@ class MongoTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals(0, self::$mongo->count(ResultsStorageInterface::STATUS_SUCCESS));
 
-        $resource = $this->getMockBuilder('\\Phpantom\\Resource')->disableOriginalConstructor()->getMock();
-        $resource2 = $this->getMockBuilder('\\Phpantom\\Resource')->disableOriginalConstructor()->getMock();
-        $resource3 = $this->getMockBuilder('\\Phpantom\\Resource')->disableOriginalConstructor()->getMock();
+        $resource = new Resource(new Request('/', 'GET'), 'foo');
+        $resource2 = new Resource(new Request('/', 'GET'), 'bar');
+        $resource3 = new Resource(new Request('/', 'GET'), 'baz');
 
         self::$mongo->populate($resource, ResultsStorageInterface::STATUS_SUCCESS);
         self::$mongo->populate($resource2, ResultsStorageInterface::STATUS_FETCH_FAILED);
 
         $this->assertEquals(1, self::$mongo->count(ResultsStorageInterface::STATUS_SUCCESS));
         $resourceFromFrontier = self::$mongo->nextResource(ResultsStorageInterface::STATUS_SUCCESS);
-        $this->assertEquals($resource, $resourceFromFrontier);
+        $this->assertEquals($resource->getType(), $resourceFromFrontier->getType());
+        $this->assertEquals($resource->getUrl(), $resourceFromFrontier->getUrl());
         $this->assertEquals(0, self::$mongo->count(ResultsStorageInterface::STATUS_SUCCESS));
         $this->assertEquals(1, self::$mongo->count(ResultsStorageInterface::STATUS_FETCH_FAILED));
 
         self::$mongo->populate($resource3, ResultsStorageInterface::STATUS_FETCH_FAILED);
         $this->assertEquals(2, self::$mongo->count(ResultsStorageInterface::STATUS_FETCH_FAILED));
         $resourceFromFrontier = self::$mongo->nextResource(ResultsStorageInterface::STATUS_FETCH_FAILED);
-        $this->assertEquals($resource3, $resourceFromFrontier);
+        $this->assertEquals($resource2->getType(), $resourceFromFrontier->getType());
+        $this->assertEquals($resource2->getUrl(), $resourceFromFrontier->getUrl());
 
         self::$mongo->clear(ResultsStorageInterface::STATUS_FETCH_FAILED);
         $this->assertEquals(0, self::$mongo->count(ResultsStorageInterface::STATUS_FETCH_FAILED));

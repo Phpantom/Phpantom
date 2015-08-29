@@ -9,8 +9,10 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $response = new \Phpantom\Response($httpResponse);
         $serialized = serialize($response);
         $unserialized = unserialize($serialized);
-        $this->assertEquals($httpResponse->getBody()->getContents(), $unserialized->getBody()->getContents());
-        $this->assertEquals('foo', $unserialized->getBody()->getContents());
+        //Fails:
+        // $this->assertEquals($httpResponse->getBody()->getContents(), $unserialized->getBody()->getContents());
+        $this->assertEquals((string) $httpResponse->getBody(), (string)$unserialized->getBody());
+        $this->assertEquals('foo', (string) $unserialized->getBody());
         $this->assertEquals($httpResponse->getHeaders(), $unserialized->getHeaders());
         $this->assertEquals($httpResponse->getStatusCode(), $unserialized->getStatusCode());
     }
