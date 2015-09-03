@@ -144,10 +144,10 @@ class Casper implements ClientInterface
         $filename = tempnam(sys_get_temp_dir(), 'phpantom-casperjs');
         file_put_contents($filename, $script);
         $options = '';
+        $this->applyProxy();
         foreach ($this->getOptions() as $option => $value) {
             $options .= ' --' . $option . '=' . $value;
         }
-        $this->applyProxy();
         exec('casperjs ' . $filename . $options, $output);
         $httpResponse = new HttpResponse();
         $content = '';
@@ -200,8 +200,9 @@ class Casper implements ClientInterface
      */
     private function applyProxy()
     {
-        if ($proxy = (string) $this->getProxy()) {
-            $this->options = array_merge($this->options, $proxy);
+        $proxy = $this->nextProxy();
+        if ($proxy !== null ) {
+            $this->options['proxy'] = $proxy;
         }
     }
 
