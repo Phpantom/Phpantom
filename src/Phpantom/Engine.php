@@ -109,6 +109,11 @@ class Engine
     /**
      * @var array
      */
+    private $loaders = [];
+
+    /**
+     * @var array
+     */
     private $eventHandlers = [];
 
     /**
@@ -532,6 +537,28 @@ class Engine
     }
 
     /**
+     * @param $resource
+     * @return ClientInterface
+     */
+    public function getLoaderForResource(Resource $resource)
+    {
+        $type = $resource->getType();
+        $loader = isset($this->loaders[$type])? $this->loaders[$type] : $this->client;
+        return $loader;
+    }
+
+    /**
+     * @param $type
+     * @param ClientInterface $client
+     * @return $this
+     */
+    public function addLoader($type, ClientInterface $client)
+    {
+        $this->loaders[$type] = $client;
+        return $this;
+    }
+
+    /**
      * Main entry point
      * @param string $mode
      */
@@ -540,8 +567,9 @@ class Engine
         $this->mode = $mode;
         while ($resource = $this->currentResource = $this->getFrontier()->nextResource()) {
             $this->getLogger()->debug('Loading resource from URL ' . $resource->getUrl());
+            $loader = $this->getLoaderForResource($resource);
             $request = $resource->getHttpRequest();
-            $httpResponse = $this->client->load($request);
+            $httpResponse = $loader->load($request);
             $response = new Response($httpResponse);
 
             if (($response->getStatusCode() === 200 || $response->getStatusCode() === 408)
