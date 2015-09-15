@@ -1,4 +1,7 @@
 <?php
+use Phpantom\Processor\Middleware\Items;
+use Phpantom\Processor\Middleware\Resources;
+use Phpantom\Processor\Middleware\Blobs;
 
 require 'vendor/autoload.php';
 
@@ -32,13 +35,20 @@ $blobsStorage = new Phpantom\BlobsStorage\Storage(new \Phpantom\BlobsStorage\Ada
 
 $engine = new \Phpantom\Engine($client, $frontier, $filter, $resultsStorage, $blobsStorage, $documentsStorage, $logger);
 
+$engine->clearFrontier();
 $resource = $engine->createResource('http://www.onliner.by', 'list');
 $engine->populateFrontier($resource, \Phpantom\Frontier\FrontierInterface::PRIORITY_NORMAL, true);
-$engine->populateFrontier($resource, \Phpantom\Frontier\FrontierInterface::PRIORITY_NORMAL, true);
 
-$engine->addHandler('list', function(\Phpantom\Response $response, \Phpantom\Resource $resource) use ($engine){
+class ListProcessor implements \Phpantom\Processor\ProcessorInterface
+{
+
+    public function process(\Phpantom\Response $response, \Phpantom\Resource $resource, \Phpantom\ResultSet $resultSet)
+    {
         $crawler = new \Phpantom\Crawler((string)$response->getContent());
         echo $crawler->filter('title')->text();
-    });
+    }
+}
+
+$engine->addProcessor('list', new Resources($engine, new Blobs($engine, new Items($engine, new ListProcessor()))));
 
 $engine->run(\Phpantom\Engine::MODE_FULL_RESTART);

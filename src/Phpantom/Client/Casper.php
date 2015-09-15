@@ -114,6 +114,7 @@ class Casper implements ClientInterface
     }
 
     /**
+     * @see http://stackoverflow.com/questions/11531448/grab-the-resource-contents-in-casperjs-or-phantomjs?rq=1
      * @param RequestInterface $request
      * @return mixed
      */

@@ -3,6 +3,7 @@
 namespace Phpantom;
 
 use Assert\Assertion;
+use Phpantom\Processor\ProcessorInterface;
 use Zend\Diactoros\Request;
 use Phpantom\BlobsStorage\Storage;
 use Phpantom\Client\ClientInterface;
@@ -104,7 +105,7 @@ class Engine
     /**
      * @var array
      */
-    private $handlers = [];
+    private $processors = [];
 
     /**
      * @var array
@@ -192,18 +193,18 @@ class Engine
     /**
      * @return array
      */
-    public function getHandlers()
+    public function getProcessors()
     {
-        return $this->handlers;
+        return $this->processors;
     }
 
     /**
-     * @param array $handlers
+     * @param array $processors
      * @return $this
      */
-    public function setHandlers($handlers)
+    public function setProcessors($processors)
     {
-        $this->handlers = $handlers;
+        $this->processors = $processors;
         return $this;
     }
 
@@ -457,22 +458,22 @@ class Engine
 
     /**
      * @param $type
-     * @param callable $handler
+     * @param ProcessorInterface $processor
      * @return $this
      */
-    public function addHandler($type, callable $handler)
+    public function addProcessor($type, ProcessorInterface $processor)
     {
-        $this->handlers[$type] = $handler;
+        $this->processors[$type] = $processor;
         return $this;
     }
 
     /**
      * @param $type
-     * @return null
+     * @return null|\Phpantom\Processor\ProcessorInterface
      */
-    public function getHandler($type)
+    public function getProcessor($type)
     {
-        return isset($this->handlers[$type]) ? $this->handlers[$type] : null;
+        return isset($this->processors[$type]) ? $this->processors[$type] : null;
     }
 
     /**
@@ -524,7 +525,7 @@ class Engine
      * @param Resource $resource
      * @param ResultSet $resultSet
      */
-    public function handleSuccesResult(Response $response, Resource $resource, ResultSet $resultSet)
+    public function handleSuccessResult(Response $response, Resource $resource, ResultSet $resultSet)
     {
         foreach ($this->getEventHandlers(self::EVENT_PARSE_SUCCESS) as $handler) {
             $handler($response, $resource, $resultSet);
@@ -556,40 +557,13 @@ class Engine
                 $this->handleEvent(self::EVENT_FETCH_SUCCESS, $response, $resource);
 
                 try {
-                    if ($handler = $this->getHandler($resource->getType())) {
-                        /** @var $handler callable */
+                    if ($processor = $this->getProcessor($resource->getType())) {
+                        /** @var $processor \Phpantom\Processor\ProcessorInterface */
                         try {
                             $resultSet = new ResultSet($resource);
-                            call_user_func($handler, $response, $resource, $resultSet);
-                            if ($resultSet->isBlob()) {
-                                $path = $this->getBlobsStorage()->write($resource, $response->getContent());
-                                $oldData = $this->getBoundDocument($resource);
-                                $blobs = [];
-                                if (isset($oldData['blobs'])) {
-                                    $blobs = $oldData['blobs'];
-                                }
-                                $blobs[md5($resource->getUrl())] = $path;
-                                $this->updateBoundDocument($resource, ['blobs' => $blobs]);
-                            } else {
-                                foreach ($resultSet->getResources() as $priority => $resData) {
-                                    foreach ($resData as $newResourceData) {
-                                        $this->populateFrontier(
-                                            $newResourceData['resource'],
-                                            $priority,
-                                            $newResourceData['force']
-                                        );
-                                    }
-                                }
-                                foreach ($resultSet->getItems() as $item) {
-                                    if ($this->documentExists($item->type, $item->id)) {
-                                        $this->updateDocument($item->type, $item->id, $item->asArray());
-                                    } else {
-                                        $this->createDocument($item->type, $item->id, $item->asArray());
-                                    }
-                                }
-                            }
+                            $processor->process($response, $resource, $resultSet);
                             $this->markParsed($resource);
-                            $this->handleSuccesResult($response, $resource, $resultSet);
+                            $this->handleSuccessResult($response, $resource, $resultSet);
                         } catch (NestedValidationExceptionInterface $exception) {
                             $this->markNotParsed($resource, $exception->getFullMessage());
                             $this->handleEvent(self::EVENT_PARSE_FAILED, $response, $resource);

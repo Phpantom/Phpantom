@@ -2,7 +2,6 @@
 
 namespace Phpantom;
 
-use Assert\Assertion;
 use Phpantom\Frontier\FrontierInterface;
 
 /**
@@ -131,14 +130,9 @@ class ResultSet
         return $this->isBlob;
     }
 
-    /**
-     * @param bool $flag
-     * @return $this
-     */
-    public function setIsBlob($flag)
+    public function markAsBlob()
     {
-        Assertion::boolean($flag);
-        $this->isBlob = $flag;
+        $this->isBlob = true;
         return $this;
     }
 
