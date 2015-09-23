@@ -2,17 +2,13 @@
 
 namespace Phpantom\Client\Middleware;
 
-use Phpantom\Client\ClientMiddleware;
 use Phpantom\Rotator;
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as Request;
+use Psr\Http\Message\ResponseInterface as Response;
+use Relay\MiddlewareInterface;
 
-/**
- * Class RandomUA
- * @package Phpantom\Client\Middleware
- */
-class RandomUA extends ClientMiddleware
+class RandomUserAgent implements MiddlewareInterface
 {
-
     use Rotator;
 
     /**
@@ -466,17 +462,20 @@ class RandomUA extends ClientMiddleware
     }
 
     /**
-     * @param RequestInterface $resource
-     * @return mixed
+     * @param Request $request the request
+     * @param Response $response the response
+     * @param callable|MiddlewareInterface|null $next the next middleware
+     *
+     * @return Response
      */
-    public function load(RequestInterface $resource)
+    public function __invoke(Request $request, Response $response, callable $next = null)
     {
-        $resource = $resource->withAddedHeader(
+        $request = $request->withAddedHeader(
             "User-Agent", (string) $this->rotate([$this, 'getRandomUserAgent'])
         );
-        $response = $this->getNext()->load($resource);
-        return $response;
+        return $next($request, $response);
     }
+
 
     /**
      * @return mixed
@@ -503,12 +502,4 @@ class RandomUA extends ClientMiddleware
         return $userAgent;
     }
 
-    /**
-     * @param array $requests
-     * @return mixed
-     */
-    public function loadBatch(array $requests)
-    {
-        // TODO: Implement loadBatch() method.
-    }
 }

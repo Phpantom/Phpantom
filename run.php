@@ -12,7 +12,19 @@ $logger = new \Monolog\Logger('PHANTOM');
 $logger->pushHandler($stream);
 
 //$client = new Phpantom\Client\Casper();
-$client = new \Phpantom\Client\Middleware\RandomUA( new Phpantom\Client\Guzzle());
+//$client = new \Phpantom\Client\Middleware\RandomUA( new Phpantom\Client\Guzzle());
+
+$queue = [
+//    new \Phpantom\Client\Middleware\Cache\File(),
+    new \Phpantom\Client\Middleware\RandomUserAgent(),
+    (new \Phpantom\Client\Middleware\Delay())->setMin(1)->setMax(2),
+//    new \Phpantom\Client\Middleware\Guzzle()
+    new \Phpantom\Client\Middleware\Casper()
+];
+
+$relayBuilder = new \Relay\RelayBuilder();
+$relay = $relayBuilder->newInstance($queue);
+$client = new \Phpantom\Client\Client($relay);
 //$client = new Phpantom\Client\FileGetContents();
 
 $storage = new \MongoDB(new \MongoClient(), 'mongo_test');
@@ -37,6 +49,7 @@ $engine = new \Phpantom\Engine($client, $frontier, $filter, $resultsStorage, $bl
 
 $engine->clearFrontier();
 $resource = $engine->createResource('http://www.onliner.by', 'list');
+//$resource = $engine->createResource('http://httpbin.org/user-agent', 'agent');
 $engine->populateFrontier($resource, \Phpantom\Frontier\FrontierInterface::PRIORITY_NORMAL, true);
 
 class ListProcessor implements \Phpantom\Processor\ProcessorInterface
@@ -48,7 +61,17 @@ class ListProcessor implements \Phpantom\Processor\ProcessorInterface
         echo $crawler->filter('title')->text();
     }
 }
+class AgentProcessor implements \Phpantom\Processor\ProcessorInterface
+{
+
+    public function process(\Phpantom\Response $response, \Phpantom\Resource $resource, \Phpantom\ResultSet $resultSet)
+    {
+        print_r(json_decode($response->getContent(), true));
+    }
+}
+
 
 $engine->addProcessor('list', new Resources($engine, new Blobs($engine, new Items($engine, new ListProcessor()))));
+$engine->addProcessor('agent', new Resources($engine, new Blobs($engine, new Items($engine, new AgentProcessor()))));
 
 $engine->run(\Phpantom\Engine::MODE_FULL_RESTART);

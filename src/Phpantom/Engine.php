@@ -3,6 +3,7 @@
 namespace Phpantom;
 
 use Assert\Assertion;
+use Zend\Diactoros\Response as HttpResponse;
 use Phpantom\Processor\ProcessorInterface;
 use Zend\Diactoros\Request;
 use Phpantom\BlobsStorage\Storage;
@@ -542,7 +543,8 @@ class Engine
         while ($resource = $this->currentResource = $this->getFrontier()->nextResource()) {
             $this->getLogger()->debug('Loading resource from URL ' . $resource->getUrl());
             $request = $resource->getHttpRequest();
-            $httpResponse = $this->client->load($request);
+            $httpResponse = new HttpResponse();
+            $httpResponse = $this->getClient()->load($request, $httpResponse);
             $response = new Response($httpResponse);
 
             if (($response->getStatusCode() === 200 || $response->getStatusCode() === 408)

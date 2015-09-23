@@ -62,11 +62,11 @@ class File extends Cache
             $data = file_get_contents($path);
             $content = @unserialize($data);
             if (false === $content) {
-                $response = new Response('php://memory', 200, ['status'=>200]);
-                $response->getBody()->write($data);
-
+                return null;
+//                $response = new Response('php://memory', 200, ['status'=>200]);
+//                $response->getBody()->write($data);
             } else {
-                $response = $content;//throw Exception??
+                $response = $content->getHttpResponse();
             }
             return $response;
         } else {
@@ -81,12 +81,15 @@ class File extends Cache
      */
     public function cache(RequestInterface $resource, ResponseInterface $response)
     {
+        $serializable = new \Phpantom\Response($response);
         $path = $this->getPath($resource);
         $dir = dirname($path);
         if (!file_exists($dir)) {
             mkdir($dir, 0777, true);
         }
-        file_put_contents($path, serialize($response));
+        //writeStream? separate stream and other params and save in different files?
+        //@see https://github.com/oscarotero/psr7-middlewares/blob/master/src/Middleware/SaveResponse.php
+        file_put_contents($path, serialize($serializable));
         clearstatcache(true, $path);
         return $path;
     }

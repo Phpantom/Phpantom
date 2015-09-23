@@ -1,6 +1,7 @@
 <?php
 namespace Phpantom;
 
+use Psr\Http\Message\ResponseInterface;
 use Zend\Diactoros\Response as HttpResponse;
 
 class Response implements \Serializable
@@ -10,7 +11,7 @@ class Response implements \Serializable
      */
     private $httpResponse;
 
-    public function __construct(HttpResponse $httpResponse)
+    public function __construct(ResponseInterface $httpResponse)
     {
         $this->httpResponse = $httpResponse;
     }

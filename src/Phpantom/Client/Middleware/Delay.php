@@ -3,10 +3,11 @@
 namespace Phpantom\Client\Middleware;
 
 use Assert\Assertion;
-use Phpantom\Client\ClientMiddleware;
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as Request;
+use Psr\Http\Message\ResponseInterface as Response;
+use Relay\MiddlewareInterface;
 
-class Delay extends ClientMiddleware
+class Delay implements MiddlewareInterface
 {
     /**
      * min delay in microseconds
@@ -43,18 +44,6 @@ class Delay extends ClientMiddleware
     }
 
     /**
-     * @param RequestInterface $resource
-     * @return mixed
-     */
-    public function load(RequestInterface $resource)
-    {
-        $delay = $this->getRandomDelay();
-        usleep($delay);
-        $response = $this->getNext()->load($resource);
-        return $response;
-    }
-
-    /**
      * @return int
      */
     private function getRandomDelay()
@@ -66,11 +55,15 @@ class Delay extends ClientMiddleware
     }
 
     /**
-     * @param array $requests
-     * @return mixed
+     * @param Request $request the request
+     * @param Response $response the response
+     * @param callable|MiddlewareInterface|null $next the next middleware
+     * @return Response
      */
-    public function loadBatch(array $requests)
+    public function __invoke(Request $request, Response $response, callable $next = null)
     {
-        // TODO: Implement loadBatch() method.
+        $delay = $this->getRandomDelay();
+        usleep($delay);
+        return $next($request, $response);
     }
 }

@@ -3,6 +3,7 @@
 namespace Phpantom\Client;
 
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Interface ClientInterface
@@ -12,19 +13,16 @@ interface ClientInterface
 {
     /**
      * @param RequestInterface $request
+     * @param ResponseInterface $response
      * @return mixed
      */
-    public function load(RequestInterface $request);
+    public function load(RequestInterface $request, ResponseInterface $response);
 
     /**
      * @param array $requests
+     * @param array $responses
      * @return mixed
      */
-    public function loadBatch(array $requests);
+    public function loadBatch(array $requests, array $responses);
 
-    /**
-     * @param Proxy $proxy
-     * @return mixed
-     */
-    public function setProxy(Proxy $proxy);
 }
