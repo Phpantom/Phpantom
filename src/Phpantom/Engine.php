@@ -4,10 +4,7 @@ namespace Phpantom;
 
 use Assert\Assertion;
 use Zend\Diactoros\Response as HttpResponse;
-use Phpantom\Processor\ProcessorInterface;
 use Zend\Diactoros\Request;
-use Phpantom\BlobsStorage\Storage;
-use Phpantom\Client\ClientInterface;
 use Phpantom\Document\DocumentInterface;
 use Phpantom\Filter\FilterInterface;
 use Phpantom\Frontier\FrontierInterface;
@@ -72,6 +69,7 @@ class Engine
      */
     const EVENT_EXCEPTION = 'exception';
 
+    private $scraper;
     /**
      * @var
      */
@@ -89,24 +87,6 @@ class Engine
      * @var ResultsStorageInterface
      */
     private $resultsStorage;
-
-    /**
-     * @var Storage
-     */
-    private $blobsStorage;
-
-    /**
-     * @var DocumentInterface
-     */
-    private $storage;
-    /**
-     * @var ClientInterface
-     */
-    private $client;
-    /**
-     * @var array
-     */
-    private $processors = [];
 
     /**
      * @var array
@@ -135,7 +115,7 @@ class Engine
 
 
     /**
-     * @param ClientInterface $client
+     * @param Scraper $scraper
      * @param FrontierInterface $frontier
      * @param FilterInterface $filter
      * @param ResultsStorageInterface $resultsStorage
@@ -144,20 +124,16 @@ class Engine
      * @param LoggerInterface $logger
      */
     public function __construct(
-        ClientInterface $client,
+        Scraper $scraper,
         FrontierInterface $frontier,
         FilterInterface $filter,
         ResultsStorageInterface $resultsStorage,
-        Storage $blobsStorage,
-        DocumentInterface $storage,
         LoggerInterface $logger
     ) {
-        $this->client = $client;
+        $this->scraper = $scraper;
         $this->frontier = $frontier;
         $this->filter = $filter;
         $this->resultsStorage = $resultsStorage;
-        $this->blobsStorage = $blobsStorage;
-        $this->storage = $storage;
         $this->logger = $logger;
         $this->registerShutdownFunction();
     }
@@ -174,6 +150,15 @@ class Engine
     }
 
     /**
+     * @return Scraper
+     */
+    public function getScraper()
+    {
+        return $this->scraper;
+    }
+
+
+    /**
      * @return mixed
      */
     public function getCurrentResource()
@@ -188,24 +173,6 @@ class Engine
     public function setCurrentResource($currentResource)
     {
         $this->currentResource = $currentResource;
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getProcessors()
-    {
-        return $this->processors;
-    }
-
-    /**
-     * @param array $processors
-     * @return $this
-     */
-    public function setProcessors($processors)
-    {
-        $this->processors = $processors;
         return $this;
     }
 
@@ -244,24 +211,6 @@ class Engine
     }
 
     /**
-     * @param mixed $mode
-     * @return $this
-     */
-    public function setMode($mode)
-    {
-        $this->mode = $mode;
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getMode()
-    {
-        return $this->mode;
-    }
-
-    /**
      * @return FrontierInterface
      */
     public function getFrontier()
@@ -270,35 +219,11 @@ class Engine
     }
 
     /**
-     * @return \Phpantom\BlobsStorage\Storage
-     */
-    public function getBlobsStorage()
-    {
-        return $this->blobsStorage;
-    }
-
-    /**
-     * @return ClientInterface
-     */
-    public function getClient()
-    {
-        return $this->client;
-    }
-
-    /**
      * @return FilterInterface
      */
     public function getFilter()
     {
         return $this->filter;
-    }
-
-    /**
-     * @return DocumentInterface
-     */
-    public function getStorage()
-    {
-        return $this->storage;
     }
 
     /**
@@ -326,155 +251,6 @@ class Engine
     public function getProject()
     {
         return isset($this->project) ? (string)$this->project . ':' : '';
-    }
-
-    /**
-     * @param $url
-     * @param $type
-     * @param string $method
-     * @return Resource
-     */
-    public function createResource($url, $type, $method = 'GET')
-    {
-        $httpRequest = new Request($url, $method);
-        return new Resource($httpRequest, $type);
-    }
-
-    /**
-     * @param $docType
-     * @param $docId
-     * @param $url
-     * @param $type
-     * @param string $method
-     * @return Resource
-     */
-    public function createBoundResource(
-        $docType,
-        $docId,
-        $url,
-        $type,
-        $method = 'GET'
-    ) {
-        $boundResource = $this->createResource($url, $type, $method);
-        $this->bindResourceToDoc($boundResource, $docType, $docId);
-        return $boundResource;
-    }
-
-
-    public function getBoundDocument(Resource $resource)
-    {
-        $meta = $resource->getMeta();
-        return $this->getDocument($meta['item_type'], $meta['item_id']);
-    }
-
-    /**
-     * @param \Phpantom\Resource|Resource $baseResource
-     * @param $url
-     * @param $type
-     * @param string $method
-     * @return Resource
-     */
-    public function createRelatedResource(Resource $baseResource, $url, $type, $method = 'GET')
-    {
-        $httpRequest = new Request($url, $method, 'php://memory', ['Referer' => $baseResource->getUrl()]);
-        $resource = new Resource($httpRequest, $type);
-        return $resource;
-    }
-
-
-    /**
-     * @param \Phpantom\Resource|Resource $resource
-     * @param $docType
-     * @param $docId
-     */
-    public function bindResourceToDoc(Resource $resource, $docType, $docId)
-    {
-        $resource->setMeta(['item_id' => $docId, 'item_type' => $docType]);
-    }
-
-
-    /**
-     * @param $type
-     * @param $id
-     * @param array $data
-     */
-    public function createDocument($type, $id, array $data)
-    {
-        $this->getStorage()->create($type, $id, $data);
-    }
-
-    public function updateBoundDocument(Resource $resource, array $data)
-    {
-        $meta = $resource->getMeta();
-        $this->updateDocument($meta['item_type'], $meta['item_id'], $data);
-    }
-
-    /**
-     * @param $type
-     * @param $id
-     * @param array $data
-     */
-    public function updateDocument($type, $id, array $data)
-    {
-        $this->getStorage()->update($type, $id, $data);
-    }
-
-    /**
-     * @param $type
-     * @param $id
-     */
-    public function deleteDocument($type, $id)
-    {
-        $this->getStorage()->delete($type, $id);
-    }
-
-    /**
-     * @param $type
-     * @param $id
-     * @return mixed
-     */
-    public function getDocument($type, $id)
-    {
-        return $this->getStorage()->get($type, $id);
-    }
-
-    /**
-     * @param $type
-     * @param $id
-     * @return bool
-     */
-    public function documentExists($type, $id)
-    {
-        return $this->getStorage()->exists($type, $id);
-    }
-
-    /**
-     * @param $type
-     * @return mixed
-     */
-    public function getDocumentsList($type)
-    {
-        return $this->getStorage()->getList($type);
-    }
-
-    /**
-     * @param $type
-     * @param ProcessorInterface $processor
-     * @return $this
-     */
-    public function addProcessor($type, ProcessorInterface $processor)
-    {
-        $this->processors[$type] = $processor;
-        return $this;
-    }
-
-    /**
-     * @param $type
-     * @return null|\Phpantom\Processor\ProcessorInterface
-     */
-    public function getProcessor($type)
-    {
-        return isset($this->processors[$type]) ? $this->processors[$type] : null;
     }
 
     /**
@@ -535,16 +311,16 @@ class Engine
 
     /**
      * Main entry point
-     * @param string $mode
      */
-    public function run($mode = self::MODE_START)
+    public function run()
     {
-        $this->mode = $mode;
         while ($resource = $this->currentResource = $this->getFrontier()->nextResource()) {
             $this->getLogger()->debug('Loading resource from URL ' . $resource->getUrl());
             $request = $resource->getHttpRequest();
             $httpResponse = new HttpResponse();
-            $httpResponse = $this->getClient()->load($request, $httpResponse);
+            $httpResponse = $this->getScraper()
+                ->getHttpClient($resource->getType())
+                ->load($request, $httpResponse);
             $response = new Response($httpResponse);
 
             if (($response->getStatusCode() === 200 || $response->getStatusCode() === 408)
@@ -559,11 +335,11 @@ class Engine
                 $this->handleEvent(self::EVENT_FETCH_SUCCESS, $response, $resource);
 
                 try {
-                    if ($processor = $this->getProcessor($resource->getType())) {
+                    if ($processor = $this->getScraper()->getProcessor($resource->getType())) {
                         /** @var $processor \Phpantom\Processor\ProcessorInterface */
                         try {
                             $resultSet = new ResultSet($resource);
-                            $processor->process($response, $resource, $resultSet);
+                            $processor->process($resource, $response, $resultSet);
                             $this->markParsed($resource);
                             $this->handleSuccessResult($response, $resource, $resultSet);
                         } catch (NestedValidationExceptionInterface $exception) {
@@ -665,21 +441,6 @@ class Engine
         $this->getResultsStorage()->clear(ResultsStorageInterface::STATUS_FETCH_FAILED);
         $this->getResultsStorage()->clear(ResultsStorageInterface::STATUS_PARSE_ERROR);
         $this->getLogger()->debug('Cleared "failed" and "not-parsed" filters');
-    }
-
-    /**
-     * Clear all Documents
-     */
-    public function clearDocs()
-    {
-        $this->getStorage()->clean();
-    }
-
-    /**
-     */
-    public function clearBlobs()
-    {
-        $this->getBlobsStorage()->clean();
     }
 
     /**

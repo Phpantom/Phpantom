@@ -2,9 +2,6 @@
 
 namespace Phpantom;
 
-use Phpantom\BlobsStorage\Storage;
-use Phpantom\Client\ClientInterface;
-use Phpantom\Document\DocumentInterface;
 use Phpantom\Filter\FilterInterface;
 use Phpantom\Frontier\FrontierInterface;
 use Phpantom\ResultsStorage\ResultsStorageInterface;
@@ -31,17 +28,14 @@ abstract class Scenario
 
 
     /**
-     * @param ClientInterface $client
+     * @param Scraper $scraper
      * @param FrontierInterface $frontier
      * @param FilterInterface $filter
      * @param ResultsStorageInterface $resultsStorage
-     * @param BlobsStorage\Storage $blobsStorage
-     * @param DocumentInterface $documentsStorage
      * @param LoggerInterface $logger
      */
-    public function __construct(ClientInterface $client, FrontierInterface $frontier, FilterInterface $filter,
-        ResultsStorageInterface $resultsStorage, Storage $blobsStorage, DocumentInterface $documentsStorage,
-        LoggerInterface $logger)
+    public function __construct(Scraper $scraper, FrontierInterface $frontier, FilterInterface $filter,
+        ResultsStorageInterface $resultsStorage, LoggerInterface $logger)
     {
         register_shutdown_function(
             function () {
@@ -51,28 +45,8 @@ abstract class Scenario
         $chunks = explode('\\', strtolower(get_class($this)));
         $this->name = array_pop($chunks);
         $this->logger = $logger;
-        $this->engine = new \Phpantom\Engine($client, $frontier, $filter, $resultsStorage, $blobsStorage,
-            $documentsStorage, $logger);
-
+        $this->engine = new Engine($scraper, $frontier, $filter, $resultsStorage, $logger);
         $this->engine->setProject($this->name);
-        $engine = $this->engine;
-        $this->engine->addHandler(
-            'image',
-            function (Response $response, Resource $resource) use ($engine, $blobsStorage) {
-                $path = $blobsStorage->write($resource, $response->getContent());
-                $oldData = $engine->getBoundDocument($resource);
-                if (isset($oldData['images'])) {
-                    $images = $oldData['images'];
-                    $images[] = $path;
-                    $images = array_unique($images);
-                } else {
-                    $images = [$path];
-                }
-                $engine->updateBoundDocument($resource, ['images' => $images]);
-
-            }
-        );
-
     }
 
     /**
@@ -172,9 +146,6 @@ abstract class Scenario
                 $this->getEngine()->clearFrontier();
                 $this->getEngine()->clearSuccessful();
                 $this->getEngine()->clearFailed();
-                $this->getEngine()->clearDocs();
-//                $root = './blobs/' . $this->name;
-//                $this->getEngine()->clearBlobs($root);
                 $this->initFrontier();
                 break;
             case Engine::MODE_RESTART:
@@ -200,13 +171,11 @@ abstract class Scenario
         $engine = $this->getEngine();
         try {
             $this->lock();
-            $engine->run($mode);
+            $engine->run();
             $this->unlock();
         } catch (\Exception $e) {
             $this->logger->critical($e->getMessage());
             exit(1);
         }
-
     }
-
 }

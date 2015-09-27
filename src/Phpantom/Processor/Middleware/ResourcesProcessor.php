@@ -2,22 +2,39 @@
 
 namespace Phpantom\Processor\Middleware;
 
-use Phpantom\Processor\ProcessorMiddleware;
+use Phpantom\Engine;
+use Phpantom\Processor\Relay\MiddlewareInterface;
 use Phpantom\Resource;
 use Phpantom\Response;
 use Phpantom\ResultSet;
 
-class Resources extends ProcessorMiddleware
+class Resources implements MiddlewareInterface
 {
+    private $engine;
+
+    public function __construct(Engine $engine)
+    {
+        $this->engine = $engine;
+    }
+
     /**
-     * @param Response $response
+     * @return Engine
+     */
+    public function getEngine()
+    {
+        return $this->engine;
+    }
+
+    /**
      * @param Resource $resource
+     * @param Response $response
      * @param ResultSet $resultSet
+     * @param callable $next
      * @return mixed
      */
-    public function process(Response $response, Resource $resource, ResultSet $resultSet)
+    public function __invoke(Resource $resource, Response $response, ResultSet $resultSet, callable $next = null)
     {
-        $this->getNext()->process($response, $resource, $resultSet);
+        $next($resource, $response, $resultSet);
         foreach ($resultSet->getResources() as $priority => $resData) {
             foreach ($resData as $newResourceData) {
                 $this->getEngine()->populateFrontier(

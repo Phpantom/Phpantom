@@ -7,5 +7,5 @@ use Phpantom\ResultSet;
 
 interface ProcessorInterface
 {
-    public function process(Response $response, Resource $resource, ResultSet $resultSet);
+    public function process(Resource $resource, Response $response, ResultSet $resultSet);
 }

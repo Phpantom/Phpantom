@@ -89,7 +89,7 @@ class Scraper
      * @param ProcessorInterface $processor
      * @return $this
      */
-    public function addProcesor($type, ProcessorInterface $processor)
+    public function addProcessor($type, ProcessorInterface $processor)
     {
         $this->processors[$type] = $processor;
         return $this;
