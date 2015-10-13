@@ -110,7 +110,7 @@ class Casper implements ClientInterface
      */
     public function getScript()
     {
-        return $this->script;
+        return empty($this->script)? $this->getDefaultScript() : $this->script;
     }
 
     /**
@@ -130,13 +130,14 @@ class Casper implements ClientInterface
             $userAgent = isset($headers['User-Agent']) ? $headers['User-Agent'] : $this->getDefaultUserAgent();
             $json = (string) $request->getBody();
             if ($this->isValidJson($json)) {
-                $script = $this->getDefaultScript(
-                    $userAgent,
-                    $url,
-                    $method,
-                    $headers,
-                    $json? : 'null'
-                );
+                $script = strtr($this->getScript(), [
+                    '{{userAgent}}' => $userAgent,
+                    '{{url}}' => $url,
+                    '{{method}}' => $method,
+                    '{{headers}}' => $headers,
+                    '{{data}}' => $json?: 'null'
+                ]);
+
             } else {
                 throw new \InvalidArgumentException("$method data expected to be properly json encoded string");
             }
@@ -207,13 +208,9 @@ class Casper implements ClientInterface
     }
 
     /**
-     * @param $userAgent
-     * @param $url
-     * @param $method
-     * @param $headers
      * @return string
      */
-    protected function getDefaultScript($userAgent, $url, $method, $headers, $data)
+    protected function getDefaultScript()
     {
         $script = <<<SCRIPT
 var casper = require('casper').create({
@@ -239,12 +236,12 @@ var casper = require('casper').create({
         XSSAuditingEnabled: false,
     }
 });
-casper.userAgent('{$userAgent}');
+casper.userAgent('{{userAgent}}');
 casper.start().then(function() {
-    this.open('{$url}', {
-        method: '{$method}',
-        headers: $headers,
-        data: $data
+    this.open('{{url}}', {
+        method: '{{method}}',
+        headers: {{headers}},
+        data: {{data}}
     });
     this.then(function(response) {
         this.echo(this.getPageContent());
