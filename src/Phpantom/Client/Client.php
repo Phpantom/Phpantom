@@ -8,6 +8,8 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Relay\Relay;
 
 /**
+ * To run scripts in parallel we can use:
+ * parallel --xapply ::: 'sleep 5 && echo "trololo"' 'sleep 5 && echo "fff"' 'echo "assds"' ::: 1### 2### 3###
  * Class Client
  * @package Phpantom\Client
  */
@@ -35,25 +37,16 @@ class Client implements ClientInterface
     }
 
     /**
+     *
      * @param Request $request
      * @param Response $response
      * @return mixed
+     *
      */
     public function load(Request $request, Response $response)
     {
         $relay = $this->getRelay();
         return $relay($request, $response);
-    }
-
-    /**
-     * @param array $requests
-     * @param array $responses
-     * @return mixed
-     */
-    public function loadBatch(array $requests, array $responses)
-    {
-        // parallel --xapply ::: 'sleep 5 && echo "trololo"' 'sleep 5 && echo "fff"' 'echo "assds"' ::: 1### 2### 3###
-        // TODO: Implement loadBatch() method.
     }
 
 }

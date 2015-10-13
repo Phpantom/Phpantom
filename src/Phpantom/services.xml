@@ -1,0 +1,113 @@
+<?xml version="1.0" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <parameters>
+        <parameter key="logger.name">PHANTOM</parameter>
+        <parameter key="logger.stream.name">php://stderr</parameter>
+        <!--\Monolog\Logger::DEBUG-->
+        <parameter key="logger.level">100</parameter>
+        <parameter key="project.name">my_project_name</parameter>
+        <parameter key="mongo.server">mongodb://localhost:27017</parameter>
+        <parameter key="mongo.db">my_project_name</parameter>
+        <!-- Absolute path -->
+        <parameter key="blobs.root">/tmp/images</parameter>
+    </parameters>
+    <services>
+        <service id="logger.formatter" class="Zoya\Monolog\Formatter\ColoredConsoleFormatter">
+        </service>
+        <service id="client_middleware_queue" class="\ArrayObject" >
+            <call method="append">
+                <argument type="service" id="random_ua_client" />
+            </call>
+            <call method="append">
+                <argument type="service" id="http_client" />
+            </call>
+        </service>
+        <service id="relay.builder" class="\Relay\RelayBuilder">
+            <call method="newInstance">
+                <argument type="service" id="client_middleware_queue" />
+            </call>
+        </service>
+        <service id="client" class="\Phpantom\Client\Client">
+            <argument id="relay.builder" />
+        </service>
+        <service id="logger.stream" class="Monolog\Handler\StreamHandler">
+            <argument>%logger.stream.name%</argument>
+            <argument>%logger.level%</argument>
+            <call method="setFormatter">
+                <argument type="service" id="logger.formatter"/>
+            </call>
+        </service>
+        <service class="Monolog\Logger" id="logger">
+            <argument>%logger.name%</argument>
+            <call method="pushHandler">
+                <argument type="service" id="logger.stream"/>
+            </call>
+        </service>
+        <service id="mongo.client" class="MongoClient">
+            <argument>%mongo.server%</argument>
+        </service>
+        <service id="mongo.db" class="MongoDb">
+            <argument type="service" id="mongo.client"/>
+            <argument>%mongo.db%</argument>
+        </service>
+        <!-- Change client or apply middleware here -->
+        <service id="http_client" class="Phpantom\Client\Middleware\Guzzle" />
+        <!--<service id="client" class="Phpantom\Client\Casper"/>-->
+        <service id="random_ua_client" class="Phpantom\Client\Middleware\RandomUserAgent" />
+
+        <service id="frontier" class="Phpantom\Frontier\Mongo">
+            <argument id="mongo.db" type="service"/>
+        </service>
+        <service id="filter" class="Phpantom\Filter\Mongo">
+            <argument id="mongo.db" type="service"/>
+        </service>
+        <service id="result_storage" class="Phpantom\ResultsStorage\Mongo">
+            <argument id="mongo.db" type="service"/>
+        </service>
+        <service id="document_storage" class="Phpantom\Document\Mongo">
+            <argument id="mongo.db" type="service"/>
+        </service>
+        <service id="LocalAdapter" class="Gaufrette\Adapter\Local">
+            <argument>%blobs.root%</argument>
+            <argument>1</argument>
+            <argument>0777</argument>
+        </service>
+        <service id="Filesystem" class="Gaufrette\Filesystem">
+            <argument id="LocalAdapter" type="service"/>
+        </service>
+        <service id="GaufretteAdapter" class="Phpantom\BlobsStorage\Adapter\Gaufrette">
+            <argument id="Filesystem" type="service"/>
+            <argument>%blobs.root%</argument>
+        </service>
+        <service id="blobs_storage" class="Phpantom\BlobsStorage\Storage">
+            <argument id="GaufretteAdapter" type="service"/>
+        </service>
+        <service id="engine" class="Phpantom\Engine">
+            <argument id="random_ua_client" type="service"/>
+            <argument id="frontier" type="service"/>
+            <argument id="filter" type="service"/>
+            <argument id="result_storage" type="service"/>
+            <argument id="blobs_storage" type="service"/>
+            <argument id="document_storage" type="service"/>
+            <argument id="logger" type="service"/>
+        </service>
+
+        <service id="logger.stream" class="Monolog\Handler\StreamHandler">
+            <argument>%logger.stream.name%</argument>
+            <argument>%logger.level%</argument>
+            <call method="setFormatter">
+                <argument type="service" id="logger.formatter"/>
+            </call>
+        </service>
+        <service class="Monolog\Logger" id="logger">
+            <argument>%logger.name%</argument>
+            <call method="pushHandler">
+                <argument type="service" id="logger.stream"/>
+            </call>
+        </service>
+
+    </services>
+
+</container>

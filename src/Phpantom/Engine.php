@@ -111,16 +111,11 @@ class Engine
      */
     private $clearErrorsOnSuccess = false;
 
-    private $mode;
-
-
     /**
      * @param Scraper $scraper
      * @param FrontierInterface $frontier
      * @param FilterInterface $filter
      * @param ResultsStorageInterface $resultsStorage
-     * @param BlobsStorage\Storage $blobsStorage
-     * @param DocumentInterface $storage
      * @param LoggerInterface $logger
      */
     public function __construct(
@@ -193,13 +188,17 @@ class Engine
     }
 
     /**
-     * @param boolean $clearErrorsOnSuccess
      * @return $this
      */
-    public function setClearErrorsOnSuccess($clearErrorsOnSuccess)
+    public function clearErrorsOnSuccess()
     {
-        $this->clearErrorsOnSuccess = (bool)$clearErrorsOnSuccess;
+        $this->clearErrorsOnSuccess = true;
         return $this;
+    }
+
+    public function notClearErrorsOnSuccess()
+    {
+        $this->clearErrorsOnSuccess = false;
     }
 
     /**
@@ -276,24 +275,26 @@ class Engine
     /**
      * @param $eventName
      * @param Response $response
-     * @param \Phpantom\Resource|Resource $resource
+     * @param \Phpantom\Resource $resource
+     * @param ResultSet $resultSet
      */
-    public function handleEvent($eventName, Response $response, Resource $resource)
+    public function handleEvent($eventName, Response $response, Resource $resource, ResultSet $resultSet)
     {
         foreach ($this->getEventHandlers($eventName) as $handler) {
-            $handler($response, $resource);
+            $handler($response, $resource, $resultSet);
         }
     }
 
     /**
      * @param Response $response
-     * @param Resource $resource
+     * @param \Phpantom\Resource $resource
+     * @param ResultSet $resultSet
      * @param \Exception $e
      */
-    public function handleException(Response $response, Resource $resource, \Exception $e = null)
+    public function handleException(Response $response, Resource $resource, ResultSet $resultSet, \Exception $e = null)
     {
         foreach ($this->getEventHandlers(self::EVENT_EXCEPTION) as $handler) {
-            $handler($response, $resource, $e);
+            $handler($response, $resource, $resultSet, $e);
         }
     }
 
@@ -322,30 +323,28 @@ class Engine
                 ->getHttpClient($resource->getType())
                 ->load($request, $httpResponse);
             $response = new Response($httpResponse);
-
+            $resultSet = new ResultSet($resource);
             if (($response->getStatusCode() === 200 || $response->getStatusCode() === 408)
                 && strlen($response->getContent())
             ) {
-                if ($this->clearErrorsOnSuccess) {
+                if ($this->isClearErrorsOnSuccess()) {
                     $this->httpFails = 0;
                 }
                 if ($this->httpFails > 0) {
                     $this->httpFails--;
                 }
-                $this->handleEvent(self::EVENT_FETCH_SUCCESS, $response, $resource);
-
+                $this->handleEvent(self::EVENT_FETCH_SUCCESS, $response, $resource, $resultSet);
                 try {
                     if ($processor = $this->getScraper()->getProcessor($resource->getType())) {
                         /** @var $processor \Phpantom\Processor\ProcessorInterface */
                         try {
-                            $resultSet = new ResultSet($resource);
                             $processor->process($resource, $response, $resultSet);
                             $this->markParsed($resource);
                             $this->handleSuccessResult($response, $resource, $resultSet);
                         } catch (NestedValidationExceptionInterface $exception) {
                             $this->markNotParsed($resource, $exception->getFullMessage());
-                            $this->handleEvent(self::EVENT_PARSE_FAILED, $response, $resource);
-                            $this->handleException($response, $resource, $exception);
+                            $this->handleEvent(self::EVENT_PARSE_FAILED, $response, $resource, $resultSet);
+                            $this->handleException($response, $resource, $resultSet, $exception);
                         }
                     }
                     $this->markVisited($resource);
@@ -357,7 +356,7 @@ class Engine
             } else {
                 $this->httpFails++;
                 $this->markFailed($resource, $response);
-                $this->handleEvent(self::EVENT_FETCH_FAILED, $response, $resource);
+                $this->handleEvent(self::EVENT_FETCH_FAILED, $response, $resource, $resultSet);
                 if ($this->httpFails > $this->maxHttpFails) {
                     $this->getLogger()->alert('Max number of http fails reached. Exit.');
                     die();

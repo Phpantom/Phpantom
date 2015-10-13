@@ -21,6 +21,7 @@ $queue = [
 
 $relayBuilder = new \Relay\RelayBuilder();
 $relay = $relayBuilder->newInstance($queue);
+
 $client = new \Phpantom\Client\Client($relay);
 $storage = new \MongoDB(new \MongoClient(), 'mongo_test');
 $frontier = new Phpantom\Frontier\Mongo($storage);

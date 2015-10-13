@@ -18,11 +18,4 @@ interface ClientInterface
      */
     public function load(RequestInterface $request, ResponseInterface $response);
 
-    /**
-     * @param array $requests
-     * @param array $responses
-     * @return mixed
-     */
-    public function loadBatch(array $requests, array $responses);
-
 }
