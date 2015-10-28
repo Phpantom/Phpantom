@@ -11,7 +11,7 @@ class Item
     /**
      * @return v
      * Usage:
-     *  return v::attribute('name', v::string()->length(1,32))
+     *  return v::attribute('name', v::stringType()->length(1,32))
      *          ->attribute('birthdate', v::date()->age(18));
      */
     protected function getValidator()

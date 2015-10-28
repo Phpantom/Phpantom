@@ -256,7 +256,7 @@ var casper = require('casper').create({
     },
     pageSettings: {
         javascriptEnabled: true,
-        loadImages: false,
+        loadImages:false,
         loadPlugins: false,
         localToRemoteUrlAccessEnabled: false,
         userName: null,
