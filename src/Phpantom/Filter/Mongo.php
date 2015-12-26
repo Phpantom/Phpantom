@@ -57,7 +57,7 @@ class Mongo implements FilterInterface
      * @param \Phpantom\Resource|Resource $resource
      * @return bool
      */
-    public function exist($filterName, Resource $resource)
+    public function exists($filterName, Resource $resource)
     {
         Assertion::string($filterName);
         $exist = $this->storage->{$filterName}->findOne(

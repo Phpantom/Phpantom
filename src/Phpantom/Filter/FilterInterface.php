@@ -29,7 +29,7 @@ interface FilterInterface
      * @param \Phpantom\Resource|Resource $resource
      * @return mixed
      */
-    public function exist($filterName, Resource $resource);
+    public function exists($filterName, Resource $resource);
 
     /**
      * @param string $filterName

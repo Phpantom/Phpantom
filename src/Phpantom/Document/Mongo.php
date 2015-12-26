@@ -148,7 +148,7 @@ class Mongo implements DocumentInterface
     /**
      * @return array
      */
-    public function clean()
+    public function clear()
     {
         return $this->storage->documents->drop();
     }

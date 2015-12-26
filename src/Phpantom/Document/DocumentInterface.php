@@ -54,7 +54,7 @@ interface DocumentInterface
     /**
      * @return mixed
      */
-    public function clean();
+    public function clear();
 
     /**
      * @param string|null $type

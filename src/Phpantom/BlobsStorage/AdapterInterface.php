@@ -43,6 +43,6 @@ interface AdapterInterface
      */
     public function delete(Resource $resource);
 
-    public function clean();
+    public function clear();
 
 }

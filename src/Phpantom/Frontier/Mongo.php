@@ -3,7 +3,6 @@
 namespace Phpantom\Frontier;
 
 use Assert\Assertion;
-use Phpantom\Resource;
 
 /**
  * Class Mongo
@@ -77,16 +76,16 @@ class Mongo implements FrontierInterface
     }
 
     /**
-     * @param \Phpantom\Resource|Resource $resource
+     * @param \Serializable $item
      * @param int $priority
      * @return mixed|void
      */
-    public function populate( Resource $resource, $priority = self::PRIORITY_NORMAL)
+    public function populate( \Serializable $item, $priority = self::PRIORITY_NORMAL)
     {
         Assertion::integer($priority);
         $frontier = $this->getProjectFrontier();
         $this->storage->$frontier->save(
-            ['sec'=>$this->getNextSequence(),'priority'=>$priority, 'data'=>serialize($resource)]
+            ['sec'=>$this->getNextSequence(),'priority'=>$priority, 'data'=>serialize($item)]
         );
 
     }
@@ -94,7 +93,7 @@ class Mongo implements FrontierInterface
     /**
      * @return mixed|null
      */
-    public function nextResource()
+    public function nextItem()
     {
         $ret = $this->storage->{$this->getProjectFrontier()}->findAndModify(
             [],
@@ -121,8 +120,4 @@ class Mongo implements FrontierInterface
         $this->storage->{$this->getProjectFrontier()}->remove([]);
     }
 
-    public function count()
-    {
-        return $this->storage->{$this->getProjectFrontier()}->count();
-    }
 }

@@ -18,7 +18,6 @@ $queue = [
     new \Phpantom\Client\Middleware\Guzzle()
 //    new \Phpantom\Client\Middleware\Casper()
 ];
-
 $relayBuilder = new \Relay\RelayBuilder();
 $relay = $relayBuilder->newInstance($queue);
 
@@ -33,7 +32,10 @@ $resultsStorage = new Phpantom\ResultsStorage\Mongo($storage);
 $filesystem = new \Gaufrette\Filesystem(new \Gaufrette\Adapter\Local('/tmp/test'));
 $blobsStorage = new Phpantom\BlobsStorage\Storage(new \Phpantom\BlobsStorage\Adapter\Gaufrette($filesystem));
 
-$resource = new \Phpantom\Resource(new \Zend\Diactoros\Request('http://www.onliner.by', 'GET'), 'list');
+$resource = new \Phpantom\Resource(new \Zend\Diactoros\Request('http://banners.dev/user/login', 'GET'), 'list');
+$resource2 = new \Phpantom\Resource(new \Zend\Diactoros\Request('http://banners.dev/', 'GET'), 'list');
+$batch = new \Phpantom\Batch();
+$batch->addResources([$resource, $resource2]);
 //$resource = $engine->createResource('http://httpbin.org/user-agent', 'agent');
 
 class ListProcessor implements \Phpantom\Processor\Relay\MiddlewareInterface
@@ -70,5 +72,5 @@ $scraper->addProcessor('list', $processor);
 
 $engine = new \Phpantom\Engine($scraper, $frontier, $filter, $resultsStorage, $logger);
 $engine->clearFrontier();
-$engine->populateFrontier($resource, \Phpantom\Frontier\FrontierInterface::PRIORITY_NORMAL, true);
+$engine->populateFrontier($batch, \Phpantom\Frontier\FrontierInterface::PRIORITY_NORMAL, true);
 $engine->run();

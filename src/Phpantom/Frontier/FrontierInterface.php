@@ -2,8 +2,6 @@
 
 namespace Phpantom\Frontier;
 
-use Phpantom\Resource;
-
 /**
  * Interface FrontierInterface
  * @package Phpantom
@@ -20,22 +18,20 @@ interface FrontierInterface
     const PRIORITY_HIGH = 2;
 
     /**
-     * @param \Phpantom\Resource|Resource $resource
+     * @param \Serializable $item
      * @param int $priority
      * @return mixed
      */
-    public function populate(Resource $resource, $priority = self::PRIORITY_NORMAL);
+    public function populate(\Serializable $item, $priority = self::PRIORITY_NORMAL);
 
     /**
      * @return \Phpantom\Resource|null
      */
-    public function nextResource();
+    public function nextItem();
 
     /**
      * @return mixed
      */
     public function clear();
-
-    public function count();
 
 }

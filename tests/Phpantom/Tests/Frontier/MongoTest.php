@@ -34,19 +34,16 @@ class MongoTest extends \PHPUnit_Framework_TestCase
         self::$mongo->populate($resource);
         self::$mongo->populate($resource2);
 
-        $this->assertEquals(2, self::$mongo->count());
-        $resourceFromFrontier = self::$mongo->nextResource();
+        $resourceFromFrontier = self::$mongo->nextItem();
         $this->assertEquals($resource->getType(), $resourceFromFrontier->getType());
         $this->assertEquals($resource->getUrl(), $resourceFromFrontier->getUrl());
-        $this->assertEquals(1, self::$mongo->count());
 
         self::$mongo->populate($resource3, FrontierInterface::PRIORITY_HIGH);
 
-        $resourceFromFrontier = self::$mongo->nextResource();
+        $resourceFromFrontier = self::$mongo->nextItem();
         $this->assertEquals($resource3->getType(), $resourceFromFrontier->getType());
         $this->assertEquals($resource3->getUrl(), $resourceFromFrontier->getUrl());
 
         self::$mongo->clear();
-        $this->assertEquals(0, self::$mongo->count());
     }
 }

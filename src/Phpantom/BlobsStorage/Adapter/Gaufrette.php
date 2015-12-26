@@ -186,7 +186,7 @@ class Gaufrette implements AdapterInterface
     /**
      *
      */
-    public function clean()
+    public function clear()
     {
         foreach($this->keys() as $key) {
             $this->getFilesystem()->delete($key);

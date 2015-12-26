@@ -26,7 +26,8 @@ class Resource implements \Serializable
     {
         Assertion::string($type);
         $this->type = $type;
-        $this->httpRequest = $httpRequest;
+        $request = $httpRequest->withRequestTarget((string) $httpRequest->getUri());
+        $this->httpRequest = $request;
     }
 
     public function __sleep()
