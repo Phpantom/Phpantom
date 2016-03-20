@@ -9,6 +9,11 @@ use Relay\MiddlewareInterface;
 
 abstract class Cache implements CacheInterface, MiddlewareInterface
 {
+    /**
+     * @var int The number of seconds in which the cached value will expire. 0 means never expire.
+     */
+    private $duration = 0;
+
     private $cacheableContentTypes = [
         'text/plain',
         'text/html',
@@ -43,7 +48,7 @@ abstract class Cache implements CacheInterface, MiddlewareInterface
         /** @var  Response $response */
         $response = $next($request, $response);
         if (200 === $response->getStatusCode() && strtoupper($request->getMethod()) === 'GET') {
-            $contentType = implode('', $response->getHeaders()['Content-Type']);
+            $contentType = $response->getHeaderLine('Content-Type');
             if (in_array($contentType, $this->cacheableContentTypes)) {
                 $this->cache($request, $response);
             }

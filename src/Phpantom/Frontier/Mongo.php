@@ -35,9 +35,9 @@ class Mongo implements FrontierInterface
     {
         try {
             $this->storage->{$this->getProjectFrontier() . '_counters'}->insert(array(
-                    '_id' => 'frontier',
-                    'seq' => 0,
-                ));
+                '_id' => 'frontier',
+                'seq' => 0,
+            ));
         } catch (\MongoCursorException $e) {
             if ($e->getCode() !== 11000) {
                 throw $e;
@@ -45,11 +45,11 @@ class Mongo implements FrontierInterface
         }
 
         $this->storage->{$this->getProjectFrontier()}->ensureIndex(array(
-                'sec' => 1,
-            ));
+            'sec' => 1,
+        ));
         $this->storage->{$this->getProjectFrontier()}->ensureIndex(array(
-                'priority' => 1,
-            ));
+            'priority' => 1,
+        ));
     }
 
     /**
@@ -80,18 +80,18 @@ class Mongo implements FrontierInterface
      * @param int $priority
      * @return mixed|void
      */
-    public function populate( \Serializable $item, $priority = self::PRIORITY_NORMAL)
+    public function populate(\Serializable $item, $priority = self::PRIORITY_NORMAL)
     {
         Assertion::integer($priority);
         $frontier = $this->getProjectFrontier();
         $this->storage->$frontier->save(
-            ['sec'=>$this->getNextSequence(),'priority'=>$priority, 'data'=>serialize($item)]
+            ['sec' => $this->getNextSequence(), 'priority' => $priority, 'data' => serialize($item)]
         );
 
     }
 
     /**
-     * @return mixed|null
+     * @return \Serializable|null
      */
     public function nextItem()
     {
@@ -100,7 +100,7 @@ class Mongo implements FrontierInterface
             [],
             null,
             [
-                'sort' => ['priority'=>-1,'seq' => 1],
+                'sort' => ['priority' => -1, 'seq' => 1],
                 'remove' => true,
             ]
         );

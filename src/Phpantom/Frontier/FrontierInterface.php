@@ -25,7 +25,7 @@ interface FrontierInterface
     public function populate(\Serializable $item, $priority = self::PRIORITY_NORMAL);
 
     /**
-     * @return \Phpantom\Resource|null
+     * @return \Serializable|null
      */
     public function nextItem();
 

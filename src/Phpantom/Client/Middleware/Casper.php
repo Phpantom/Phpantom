@@ -27,6 +27,12 @@ class Casper implements MiddlewareInterface
      * @var string
      */
     private $script = '';
+
+    /**
+     * @var
+     */
+    private $scriptProvider;
+
     /**
      * @var string
      */
@@ -116,6 +122,24 @@ class Casper implements MiddlewareInterface
     }
 
     /**
+     * @return callable
+     */
+    public function getScriptProvider()
+    {
+        return $this->scriptProvider;
+    }
+
+    /**
+     * @param mixed $scriptProvider
+     * @return $this
+     */
+    public function setScriptProvider(callable $scriptProvider)
+    {
+        $this->scriptProvider = $scriptProvider;
+        return $this;
+    }
+
+    /**
      * @param Proxy $proxy
      * @return $this
      */
@@ -152,16 +176,12 @@ class Casper implements MiddlewareInterface
     }
 
     /**
-     * @param $userAgent
-     * @param $url
-     * @param $method
-     * @param $headers
      * @return string
      */
-    protected function getDefaultScript($userAgent, $url, $method, $headers, $data)
+    protected function getDefaultScript()
     {
         $script = <<<SCRIPT
-var casper = require('casper').create({
+    var casper = require('casper').create({
     verbose: false,
     logLevel: 'error',
     exitOnError: true,
@@ -176,20 +196,20 @@ var casper = require('casper').create({
     },
     pageSettings: {
         javascriptEnabled: true,
-        loadImages: false,
+        loadImages:false,
         loadPlugins: false,
         localToRemoteUrlAccessEnabled: false,
         userName: null,
         password: null,
         XSSAuditingEnabled: false,
     }
-});
-casper.userAgent('{$userAgent}');
-casper.start().then(function() {
-    this.open('{$url}', {
-        method: '{$method}',
-        headers: $headers,
-        data: $data
+    });
+    casper.userAgent('{{userAgent}}');
+    casper.start().then(function() {
+    this.open('{{url}}', {
+        method: '{{method}}',
+        headers: {{headers}},
+        data: {{data}}
     });
     this.then(function(response) {
         this.echo(this.getPageContent());
@@ -197,11 +217,8 @@ casper.start().then(function() {
         require('utils').dump(response);
         this.exit();
     });
-
-});
-
-casper.run();
-
+    });
+    casper.run();
 SCRIPT;
         return $script;
     }
@@ -216,26 +233,34 @@ SCRIPT;
     public function __invoke(Request $request, Response $response, callable $next = null)
     {
         if (!$script = $this->getScript()) {
-            $url = (string) $request->getUri();
-            $method = strtolower($request->getMethod());
-            $headersList = [];
-            foreach ($request->getHeaders() as $key => $val) {
-                $headersList[$key] = implode(', ', $val);
-            }
-            $headers = json_encode($headersList ? : [], JSON_FORCE_OBJECT);
-            $userAgent = isset($headers['User-Agent']) ? $headers['User-Agent'] : $this->getDefaultUserAgent();
-            $json = (string) $request->getBody();
-            if ($this->isValidJson($json)) {
-                $script = $this->getDefaultScript(
-                    $userAgent,
-                    $url,
-                    $method,
-                    $headers,
-                    $json? : 'null'
-                );
+            if ($provider = $this->getScriptProvider()) {
+                $script = $provider($request);
             } else {
-                throw new \InvalidArgumentException("$method data expected to be properly json encoded string");
+                $script = $this->getDefaultScript();
             }
+        }
+        $url = (string)$request->getUri();
+        $method = strtolower($request->getMethod());
+        $headersList = [];
+        foreach ($request->getHeaders() as $key => $val) {
+            $headersList[$key] = implode(', ', $val);
+        }
+        $headers = json_encode($headersList ?: [], JSON_FORCE_OBJECT | JSON_UNESCAPED_SLASHES);
+        $userAgent = isset($headers['User-Agent']) ? $headers['User-Agent'] : $this->getDefaultUserAgent();
+        $json = (string)$request->getBody();
+        if ($this->isValidJson($json)) {
+            $script = strtr(
+                $script,
+                [
+                    '{{userAgent}}' => $userAgent,
+                    '{{url}}' => $url,
+                    '{{method}}' => $method,
+                    '{{headers}}' => $headers,
+                    '{{data}}' => $json ?: 'null'
+                ]
+            );
+        } else {
+            throw new \InvalidArgumentException("$method data expected to be properly json encoded string");
         }
         $filename = tempnam(sys_get_temp_dir(), 'phpantom-casperjs');
         file_put_contents($filename, $script);

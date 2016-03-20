@@ -49,6 +49,12 @@ class Guzzle implements MiddlewareInterface
         $this->proxy = $proxy;
     }
 
+    public function setProxy(Proxy $proxy)
+    {
+        $this->proxy = $proxy;
+        return $this;
+    }
+
     public function setHttpClient(Client $httpClient)
     {
         $this->httpClient = $httpClient;

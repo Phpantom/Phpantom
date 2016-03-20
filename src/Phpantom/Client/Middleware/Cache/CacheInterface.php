@@ -20,9 +20,10 @@ interface CacheInterface
     /**
      * @param RequestInterface $resource
      * @param ResponseInterface $response
-     * @return mixed
+     * @param int $duration
+     * @return boolean
      */
-    public function cache(RequestInterface $resource, ResponseInterface $response);
+    public function cache(RequestInterface $resource, ResponseInterface $response, $duration = 0);
 
     /**
      * @param RequestInterface $resource

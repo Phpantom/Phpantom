@@ -3,7 +3,6 @@
 namespace Phpantom;
 
 use Assert\Assertion;
-use Doctrine\Instantiator\Exception\InvalidArgumentException;
 use Respect\Validation\Exceptions\NestedValidationException;
 use Zend\Diactoros\Response as HttpResponse;
 use Zend\Diactoros\Request;
@@ -148,7 +147,7 @@ class Engine
         $this->filter = $filter;
         $this->resultsStorage = $resultsStorage;
         $this->logger = $logger;
-//        $this->registerShutdownFunction();
+        $this->registerShutdownFunction();
     }
 
     protected function registerShutdownFunction()
@@ -414,7 +413,7 @@ class Engine
 
     /**
      * Populates Frontier with passed Resource.
-     * @param \Phpantom\Resource | \Phpantom\Batch $resource
+     * @param \Phpantom\Resource | \Phpantom\Batch $item
      * @param int $priority High (2) or Normal (1)
      * @param bool $force Populate Frontier even if Resource is already visited
      */
@@ -424,7 +423,7 @@ class Engine
         Assertion::boolean($force);
         switch (true) {
             case $item instanceof \Phpantom\Resource:
-                $this->populateSingleResource($item, $priority, $force);
+                $this->populateSingleItem($item, $priority, $force);
                 break;
             case $item instanceof \Phpantom\Batch:
                 foreach($item->getResources() as $resource) {
@@ -432,10 +431,11 @@ class Engine
                         $item->removeResource($resource);
                     }
                 }
+                $this->getFrontier()->populate($item, $priority);
                 break;
             default:
                 throw new \InvalidArgumentException(
-                    sprintf('Instance of Phpantom\Resource or Phpantom\Batch expected. %s given', gettype($resource)));
+                    sprintf('Instance of Phpantom\Resource or Phpantom\Batch expected. %s given', gettype($item)));
                 break;
         }
     }
@@ -452,7 +452,7 @@ class Engine
         return true;
     }
 
-    private function populateSingleResource(Resource $resource, $priority = FrontierInterface::PRIORITY_NORMAL, $force = false)
+    private function populateSingleItem(Resource $resource, $priority = FrontierInterface::PRIORITY_NORMAL, $force = false)
     {
         if ($this->isScheduled($resource) && !$force) {
             $this->getLogger()->notice("Url {$resource->getUrl()} is already scheduled");

@@ -58,13 +58,11 @@ class File extends Cache
     public function get(RequestInterface $resource)
     {
         $path = $this->getPath($resource);
-        if (file_exists($path)) {
+        if (file_exists($path) && @filemtime($path) > time()) {
             $data = file_get_contents($path);
             $content = @unserialize($data);
             if (false === $content) {
                 return null;
-//                $response = new Response('php://memory', 200, ['status'=>200]);
-//                $response->getBody()->write($data);
             } else {
                 $response = $content->getHttpResponse();
             }
@@ -77,9 +75,10 @@ class File extends Cache
     /**
      * @param RequestInterface $resource
      * @param ResponseInterface $response
+     * @param int $duration
      * @return mixed|string
      */
-    public function cache(RequestInterface $resource, ResponseInterface $response)
+    public function cache(RequestInterface $resource, ResponseInterface $response, $duration = 0)
     {
         $serializable = new \Phpantom\Response($response);
         $path = $this->getPath($resource);
@@ -89,9 +88,15 @@ class File extends Cache
         }
         //writeStream? separate stream and other params and save in different files?
         //@see https://github.com/oscarotero/psr7-middlewares/blob/master/src/Middleware/SaveResponse.php
-        file_put_contents($path, serialize($serializable));
-        clearstatcache(true, $path);
-        return $path;
+        if (@file_put_contents($path, serialize($serializable), LOCK_EX) !== false) {
+            if ($duration <= 0) {
+                $duration = 31536000; // 1 year
+            }
+            clearstatcache(true, $path);
+            return @touch($path, $duration + time());
+        } else {
+            return false;
+        }
     }
 
     /**

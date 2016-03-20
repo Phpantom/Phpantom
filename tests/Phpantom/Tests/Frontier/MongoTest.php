@@ -27,7 +27,6 @@ class MongoTest extends \PHPUnit_Framework_TestCase
 
     public function testQueue()
     {
-        $this->assertEquals(0, self::$mongo->count());
         $resource = new Resource(new Request('/', 'GET'), 'foo');
         $resource2 = new Resource(new Request('/', 'GET'), 'bar');
         $resource3 = new Resource(new Request('/', 'GET'), 'baz');
@@ -45,5 +44,6 @@ class MongoTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($resource3->getUrl(), $resourceFromFrontier->getUrl());
 
         self::$mongo->clear();
+        $this->assertNull(self::$mongo->nextItem());
     }
 }
