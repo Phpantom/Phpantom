@@ -36,12 +36,12 @@ class MongoTest extends \PHPUnit_Framework_TestCase
         self::$mongo->clear('foo');
     }
 
-    public function testAddExist()
+    public function testAddExists()
     {
-        $this->assertTrue(self::$mongo->exist('foo', $this->resource));
+        $this->assertTrue(self::$mongo->exists('foo', $this->resource));
         $resource = $this->getMockBuilder('\\Phpantom\\Resource')->disableOriginalConstructor()->getMock();
         $resource->expects($this->any())->method('getHash')->will($this->returnValue(sha1(555)));
-        $this->assertFalse(self::$mongo->exist('foo', $resource));
+        $this->assertFalse(self::$mongo->exists('foo', $resource));
     }
 
     public function testRemoveCountClear()

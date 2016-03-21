@@ -71,6 +71,6 @@ $processor = new \Phpantom\Processor\Processor($processorRelay);
 $scraper->addProcessor('list', $processor);
 
 $engine = new \Phpantom\Engine($scraper, $frontier, $filter, $resultsStorage, $logger);
-$engine->clearFrontier();
+$engine->clearAll();
 $engine->populateFrontier($batch, \Phpantom\Frontier\FrontierInterface::PRIORITY_NORMAL, true);
 $engine->run();

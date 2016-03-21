@@ -49,7 +49,6 @@ class CrawlCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $container = new ContainerBuilder();
-//        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../..'));
         $loader = new XmlFileLoader($container, new FileLocator('.'));
         $loader->load('services.xml');
         $scenarioName = strtolower($input->getArgument('scenario'));

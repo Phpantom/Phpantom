@@ -428,10 +428,17 @@ class Engine
             case $item instanceof \Phpantom\Batch:
                 foreach($item->getResources() as $resource) {
                     if (!$this->isNewResource($resource)) {
+                        $this->getLogger()->notice(
+                            "Url {$resource->getUrl()} is already scheduled/visited. Removed from batch"
+                        );
                         $item->removeResource($resource);
                     }
                 }
-                $this->getFrontier()->populate($item, $priority);
+                if ($item->count()) {
+                    $this->getFrontier()->populate($item, $priority);
+                } else {
+                    $this->getLogger()->notice("Batch is empty. Skipped");
+                }
                 break;
             default:
                 throw new \InvalidArgumentException(
@@ -617,4 +624,12 @@ class Engine
         return $this->maxHttpFails;
     }
 
+    public function clearAll()
+    {
+        $this->clearVisited();
+        $this->clearScheduled();
+        $this->clearFrontier();
+        $this->clearFailed();
+        $this->clearSuccessful();
+    }
 }

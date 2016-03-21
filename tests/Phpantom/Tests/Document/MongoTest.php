@@ -30,7 +30,7 @@ class MongoTest extends \PHPUnit_Framework_TestCase
 
     protected function tearDown()
     {
-        self::$mongo->clean();
+        self::$mongo->clear();
     }
 
     public function testCreate()
@@ -96,13 +96,13 @@ class MongoTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals([self::$initData, $data], $docs, 'Documents with all types');
     }
 
-    public function testCountAndClean()
+    public function testCountAndClear()
     {
         $this->assertEquals(1, self::$mongo->count('foo'));
         $data = ['bar'=>'baz'];
         self::$mongo->create('foo2', '555', $data);
         $this->assertEquals(2, self::$mongo->count());
-        self::$mongo->clean();
+        self::$mongo->clear();
         $this->assertEquals(0, self::$mongo->count());
     }
 

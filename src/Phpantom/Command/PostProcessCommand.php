@@ -54,7 +54,6 @@ class PostProcessCommand extends Command
         $params = [];
 
         $container = new ContainerBuilder();
-//        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../..'));
         $loader = new XmlFileLoader($container, new FileLocator('.'));
         $loader->load('services.xml');
         $project = strtolower($input->getArgument('project'));

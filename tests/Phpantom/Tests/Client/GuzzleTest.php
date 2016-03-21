@@ -3,7 +3,6 @@
 namespace Phpantom\Tests\Client;
 
 use Phpantom\Client\Middleware\Guzzle;
-//use Phpantom\Client\Middleware\RandomUA;
 use Phpantom\Client\Proxy;
 use Zend\Diactoros\Request;
 use Zend\Diactoros\Response;
@@ -95,21 +94,6 @@ class GuzzleTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('httpbin.org', $data['Host']);
     }
 
-//    public function testUserAgentMiddleware()
-//    {
-//        $request = new Request('http://httpbin.org/user-agent', 'GET');
-//        $client = new RandomUA(new Guzzle());
-//        $client->setBrowserStrings(['Phpantom' => ['Phpantom client 1.0']]);
-//        $client->setBrowserFreq(['Phpantom' => 100]);
-//        $response = $client->load($request);
-//        $this->assertInstanceOf('\Zend\Diactoros\Response', $response);
-//        $this->assertEquals(200, $response->getStatusCode());
-//
-//        $json = (string)$response->getBody();
-//        $data = json_decode($json, true);
-//        $this->assertEquals('Phpantom client 1.0', $data['user-agent']);
-//    }
-
     public function testStatus()
     {
         $request = new Request('http://httpbin.org/status/418', 'GET');
@@ -150,10 +134,6 @@ class GuzzleTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('bar', $data['foo']);
         $this->assertEquals('bin', $data['baz']);
 
-        //JSON
-        $proxy = new Proxy();
-        $proxy->setProxyList(['tcp://localhost:8888']);
-        $client->setProxy($proxy);
         $request = (new Request('http://httpbin.org/post', 'POST'))
             ->withAddedHeader('Content-Type', 'application/json')
             ->withBody(new Stream(fopen('php://temp', 'rw')));

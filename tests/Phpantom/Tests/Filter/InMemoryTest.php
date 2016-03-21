@@ -26,12 +26,12 @@ class InMemoryTest extends \PHPUnit_Framework_TestCase
         self::$storage->clear('foo');
     }
 
-    public function testAddExist()
+    public function testAddExists()
     {
-        $this->assertTrue(self::$storage->exist('foo', $this->resource));
+        $this->assertTrue(self::$storage->exists('foo', $this->resource));
         $resource = $this->getMockBuilder('\\Phpantom\\Resource')->disableOriginalConstructor()->getMock();
         $resource->expects($this->any())->method('getHash')->will($this->returnValue(sha1(555)));
-        $this->assertFalse(self::$storage->exist('foo', $resource));
+        $this->assertFalse(self::$storage->exists('foo', $resource));
     }
 
     public function testRemoveCountClear()

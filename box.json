@@ -1,0 +1,7 @@
+{
+  "directories": ".",
+  "main": "phpantom",
+  "output": "phpantom.phar",
+  "stub": true,
+  "chmod": "0755"
+}

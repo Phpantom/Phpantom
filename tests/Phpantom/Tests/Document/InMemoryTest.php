@@ -20,7 +20,7 @@ class InMemoryTest extends \PHPUnit_Framework_TestCase
 
     protected function tearDown()
     {
-        self::$storage->clean();
+        self::$storage->clear();
     }
 
     public function testCreate()
@@ -64,13 +64,13 @@ class InMemoryTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals([self::$initData, $data], $docs, 'Documents with all types');
     }
 
-    public function testCountAndClean()
+    public function testCountAndClear()
     {
         $this->assertEquals(1, self::$storage->count('foo'));
         $data = ['bar'=>'baz'];
         self::$storage->create('foo2', '555', $data);
         $this->assertEquals(2, self::$storage->count());
-        self::$storage->clean();
+        self::$storage->clear();
         $this->assertEquals(0, self::$storage->count());
     }
 

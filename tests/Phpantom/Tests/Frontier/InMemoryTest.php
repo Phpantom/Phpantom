@@ -30,14 +30,14 @@ class InMemoryTest extends \PHPUnit_Framework_TestCase
         self::$storage->populate($resource2);
 
         $this->assertEquals(2, self::$storage->count());
-        $resourceFromFrontier = self::$storage->nextResource();
+        $resourceFromFrontier = self::$storage->nextItem();
         $this->assertEquals($resource->getType(), $resourceFromFrontier->getType());
         $this->assertEquals($resource->getUrl(), $resourceFromFrontier->getUrl());
         $this->assertEquals(1, self::$storage->count());
 
         self::$storage->populate($resource3, FrontierInterface::PRIORITY_HIGH);
 
-        $resourceFromFrontier = self::$storage->nextResource();
+        $resourceFromFrontier = self::$storage->nextItem();
         $this->assertEquals($resource3->getType(), $resourceFromFrontier->getType());
         $this->assertEquals($resource3->getUrl(), $resourceFromFrontier->getUrl());
 
