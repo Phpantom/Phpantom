@@ -14,8 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class PostProcessCommand extends Command
 {
-    const POST_PROCESSOR_CONSOLE = 'console';
-    const POST_PROCESSOR_CSV = 'csv';
+    const DEFAULT_POST_PROCESSOR = 'console';
 
     protected function configure()
     {
@@ -36,7 +35,7 @@ class PostProcessCommand extends Command
                 'post_processor',
                 InputArgument::OPTIONAL,
                 'Post processor name',
-                self::POST_PROCESSOR_CONSOLE
+                self::DEFAULT_POST_PROCESSOR
             )
             ->addArgument(
                 'params',
@@ -46,6 +45,11 @@ class PostProcessCommand extends Command
         ;
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int|null|void
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $type = $input->getArgument('doc_type');

@@ -24,32 +24,6 @@ class Engine
     /**
      *
      */
-    const MODE_START = 'start';
-    /**
-     *
-     */
-    const MODE_RESTART = 'restart';
-    /**
-     *
-     */
-    const MODE_FULL_RESTART = 'full_restart';
-    /**
-     *
-     */
-    const MODE_REFRESH_ONLY = 'refresh_only';
-    /**
-     *
-     */
-    const MODE_REFRESH_WITH_NEW = 'refresh_with_new';
-
-    /**
-     *
-     */
-    const MODE_NEW_ONLY = 'new_only';
-
-    /**
-     *
-     */
     const EVENT_FETCH_SUCCESS = 'fetch_success';
     /**
      *

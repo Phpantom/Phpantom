@@ -66,11 +66,8 @@ class ResultSet
         $resource = $resource->withHeader('Referer', $this->resource->getUrl());
         $resource->addMeta(
             [
-                'item_id' => $item->id,
-                'item_type' => $item->type,
-                'rel_resource_url' => $this->resource->getUrl(),
-                'rel_resource_type' => $this->resource->getType(),
-                'rel_resource_meta' => $this->resource->getMeta()
+                'related_item' => $item,
+                'related_resource' => clone $this->resource
             ]
         );
         $this->relatedResources[$priority][] = ['resource' => $resource, 'force' => $force];

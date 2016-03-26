@@ -1,0 +1,50 @@
+<?xml version="1.0" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <parameters>
+        <parameter key="project.name">my_project_name</parameter>
+    </parameters>
+    <!--
+    <services>
+            override Client middleware definition
+            <service id="client_middleware_queue" class="\ArrayObject" >
+                <call method="append">
+                    <argument type="service" id="http_client" />
+                </call>
+            </service>
+
+            override Processors middleware definition
+            <service id="processor_middleware_queue" class="\ArrayObject" >
+                <call method="append">
+                    <argument type="service" id="items_processor" />
+                </call>
+                <call method="append">
+                    <argument type="service" id="blobs_processor" />
+                </call>
+            </service>
+
+            override HTTP Client definition
+            <service id="http_client" class="Phpantom\Client\Middleware\Guzzle" />
+            <service id="http_client" class="Phpantom\Client\Middleware\Casper" />
+
+            override Scraper definition
+            <service id="scraper" class="Phpantom\Scraper" >
+                <call method="setDefaultHttpClient">
+                    <argument type="service" id="client"/>
+                </call>
+                <call method="addHttpClient">
+                    <argument>type of resource</argument>
+                    <argument type="service" id="client"/>
+                </call>
+                <call method="setDefaultProcessor" >
+                    <argument type="service" id="processor" />
+                </call>
+                <call method="addProcessor" >
+                    <argument>type of resource</argument>
+                    <argument type="service" id="processor" />
+                </call>
+            </service>
+        </services>
+    -->
+</container>

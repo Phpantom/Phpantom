@@ -27,4 +27,5 @@ $application = new Application();
 $application->add(new \Phpantom\Command\CrawlCommand());
 $application->add(new \Phpantom\Command\PostProcessCommand());
 $application->add(new \Phpantom\Command\InfoCommand());
+$application->add(new \Phpantom\Command\EngineCommand());
 $application->run();

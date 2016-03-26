@@ -31,7 +31,7 @@ class ItemTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Respect\Validation\Exceptions\NestedValidationExceptionInterface
+     * @expectedException \Respect\Validation\Exceptions\NestedValidationException
      */
     public function testDefaultIdValidationFail()
     {
@@ -41,7 +41,7 @@ class ItemTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Respect\Validation\Exceptions\NestedValidationExceptionInterface
+     * @expectedException \Respect\Validation\Exceptions\NestedValidationException
      */
     public function testDefaultTypeValidationFail()
     {

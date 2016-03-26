@@ -15,6 +15,15 @@ use Psr\Log\LoggerInterface;
  */
 abstract class Scenario
 {
+    /**
+     * Don't fetch visited urls
+     */
+    const MODE_NORMAL = 'normal';
+    /**
+     * Clear frontier and filters
+     */
+    const MODE_RESTART = 'restart';
+
     use LoggerAwareTrait;
 
     /**
@@ -134,33 +143,20 @@ abstract class Scenario
     /**
      * @param $mode
      */
-    public function run($mode)
+    public function run($mode, $lock = false)
     {
         switch ($mode) {
-            case Engine::MODE_START:
+            case self::MODE_NORMAL:
                 $this->initFrontier();
                 break;
-            case Engine::MODE_FULL_RESTART:
-                $this->getEngine()->clearScheduled();
-                $this->getEngine()->clearVisited();
-                $this->getEngine()->clearFrontier();
-                $this->getEngine()->clearSuccessful();
-                $this->getEngine()->clearFailed();
+            case self::MODE_RESTART:
+                $this->getEngine()->clearAll();
                 $this->initFrontier();
                 break;
-            case Engine::MODE_RESTART:
-                $this->getEngine()->clearFailed();
-                //@todo copy failed resources to frontier
-                $this->getEngine()->clearFrontier();
-                $this->initFrontier();
-                break;
-            case Engine::MODE_REFRESH_ONLY:
-            case Engine::MODE_REFRESH_WITH_NEW:
-                break;
-            case Engine::MODE_NEW_ONLY:
-                $this->getEngine()->clearScheduled();
-                $this->initFrontier();
-                break;
+            default:
+                throw new \RuntimeException(
+                    sprintf('Unknown mode %s. Available modes: %s, %s', $mode, self::MODE_NORMAL, self::MODE_RESTART)
+                );
         }
 
         //@todo handle refresh mode
@@ -170,9 +166,13 @@ abstract class Scenario
 
         $engine = $this->getEngine();
         try {
-            $this->lock();
-            $engine->run();
-            $this->unlock();
+            if ($lock) {
+                $this->lock();
+                $engine->run();
+                $this->unlock();
+            } else {
+                $engine->run();
+            }
         } catch (\Exception $e) {
             $this->logger->critical($e->getMessage());
             exit(1);

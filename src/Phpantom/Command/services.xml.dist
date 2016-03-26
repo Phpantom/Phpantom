@@ -7,19 +7,18 @@
         <parameter key="logger.stream.name">php://stderr</parameter>
         <!--\Monolog\Logger::DEBUG-->
         <parameter key="logger.level">100</parameter>
-        <parameter key="project.name">my_project_name</parameter>
-        <parameter key="mongo.server">mongodb://localhost:27017</parameter>
-        <parameter key="mongo.db">my_project_name</parameter>
         <!-- Absolute path -->
-        <parameter key="blobs.root">/tmp/images</parameter>
+        <parameter key="blobs.root">{{blobs_root}}</parameter>
     </parameters>
     <services>
-        <service id="logger.formatter" class="Zoya\Monolog\Formatter\ColoredConsoleFormatter">
-        </service>
+        <service id="logger.formatter" class="Zoya\Monolog\Formatter\ColoredConsoleFormatter" />
+        <!-- Client definition -->
         <service id="client_middleware_queue" class="\ArrayObject" >
+        <!--
             <call method="append">
                 <argument type="service" id="random_ua_client" />
             </call>
+            -->
             <call method="append">
                 <argument type="service" id="http_client" />
             </call>
@@ -32,6 +31,30 @@
         <service id="client" class="\Phpantom\Client\Client">
             <argument id="relay.builder" />
         </service>
+        <!-- Processors definition -->
+
+        <service id="processor_middleware_queue" class="\ArrayObject" >
+            <call method="append">
+                <argument type="service" id="items_processor" />
+            </call>
+            <call method="append">
+                <argument type="service" id="blobs_processor" />
+            </call>
+            <!-- Add your processor definition for a certain resource type
+             <call method="append">
+                 <argument type="service" id="my_processor" />
+             </call>
+             -->
+        </service>
+        <service id="pocessor_relay.builder" class="\Phpantom\Processor\Relay\RelayBuilder">
+            <call method="newInstance">
+                <argument type="service" id="processor_middleware_queue" />
+            </call>
+        </service>
+        <service id="processor" class="\Phpantom\Processor\Processor">
+            <argument id="processor_relay.builder" />
+        </service>
+
         <service id="logger.stream" class="Monolog\Handler\StreamHandler">
             <argument>%logger.stream.name%</argument>
             <argument>%logger.level%</argument>
@@ -45,29 +68,26 @@
                 <argument type="service" id="logger.stream"/>
             </call>
         </service>
-        <service id="mongo.client" class="MongoClient">
-            <argument>%mongo.server%</argument>
-        </service>
-        <service id="mongo.db" class="MongoDb">
-            <argument type="service" id="mongo.client"/>
-            <argument>%mongo.db%</argument>
-        </service>
-        <!-- Change client or apply middleware here -->
+
+        <!-- Change client or specify middleware here -->
         <service id="http_client" class="Phpantom\Client\Middleware\Guzzle" />
         <!--<service id="client" class="Phpantom\Client\Casper"/>-->
-        <service id="random_ua_client" class="Phpantom\Client\Middleware\RandomUserAgent" />
+        <!--<service id="random_ua_client" class="Phpantom\Client\Middleware\RandomUserAgent" />-->
 
-        <service id="frontier" class="Phpantom\Frontier\Mongo">
-            <argument id="mongo.db" type="service"/>
+        <service id="frontier" class="Phpantom\Frontier\InMemory" />
+        <service id="filter" class="Phpantom\Filter\InMemory" />
+        <service id="result_storage" class="Phpantom\ResultsStorage\InMemory" />
+        <service id="document_storage" class="Phpantom\Document\InMemory" />
+        <service id="document_manager" class="\Phpantom\Document\Manager" >
+            <argument type="service" id="document_storage" ></argument>
         </service>
-        <service id="filter" class="Phpantom\Filter\Mongo">
-            <argument id="mongo.db" type="service"/>
+
+        <service id="items_processor" class="\Phpantom\Processor\Middleware\ItemsProcessor" >
+            <argument type="service" id="document_manager" />
         </service>
-        <service id="result_storage" class="Phpantom\ResultsStorage\Mongo">
-            <argument id="mongo.db" type="service"/>
-        </service>
-        <service id="document_storage" class="Phpantom\Document\Mongo">
-            <argument id="mongo.db" type="service"/>
+        <service id="blobs_processor" class="\Phpantom\Processor\Middleware\BlobsProcessor" >
+            <argument type="service" id="blobs_storage" />
+            <argument type="service" id="document_manager" />
         </service>
         <service id="LocalAdapter" class="Gaufrette\Adapter\Local">
             <argument>%blobs.root%</argument>
@@ -84,28 +104,21 @@
         <service id="blobs_storage" class="Phpantom\BlobsStorage\Storage">
             <argument id="GaufretteAdapter" type="service"/>
         </service>
+        <service id="scraper" class="Phpantom\Scraper" >
+            <call method="setDefaultHttpClient">
+                <argument type="service" id="client"/>
+            </call>
+            <call method="setDefaultProcessor" >
+                <argument type="service" id="processor" />
+            </call>
+        </service>
+
         <service id="engine" class="Phpantom\Engine">
-            <argument id="random_ua_client" type="service"/>
+            <argument id="scraper" type="service"/>
             <argument id="frontier" type="service"/>
             <argument id="filter" type="service"/>
             <argument id="result_storage" type="service"/>
-            <argument id="blobs_storage" type="service"/>
-            <argument id="document_storage" type="service"/>
             <argument id="logger" type="service"/>
-        </service>
-
-        <service id="logger.stream" class="Monolog\Handler\StreamHandler">
-            <argument>%logger.stream.name%</argument>
-            <argument>%logger.level%</argument>
-            <call method="setFormatter">
-                <argument type="service" id="logger.formatter"/>
-            </call>
-        </service>
-        <service class="Monolog\Logger" id="logger">
-            <argument>%logger.name%</argument>
-            <call method="pushHandler">
-                <argument type="service" id="logger.stream"/>
-            </call>
         </service>
 
     </services>

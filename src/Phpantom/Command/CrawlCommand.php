@@ -3,6 +3,7 @@
 namespace Phpantom\Command;
 
 use Phpantom\Engine;
+use Phpantom\Scenario;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
@@ -15,6 +16,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class CrawlCommand extends Command
 {
+    /**
+     * Configures the current command.
+     */
     protected function configure()
     {
         $this
@@ -28,24 +32,29 @@ class CrawlCommand extends Command
             ->addArgument(
                 'mode',
                 InputArgument::OPTIONAL,
-                'Crawl mode: start (default), restart, full_restart, refresh_only, refresh_with_new, new_only?',
-                Engine::MODE_START
+                'Crawl mode: normal (default), restart',
+                Scenario::MODE_NORMAL
             )
             ->addOption(
-                'with_failed',
+                'lock',
                 null,
                 InputOption::VALUE_NONE,
-                'Add failed resource to frontier'
+                'Lock scenario?'
             )
-            ->addOption(
-                'new_session',
-                null,
-                InputOption::VALUE_NONE,
-                'Start new session'
-            )
+//            ->addOption(
+//                'new_session',
+//                null,
+//                InputOption::VALUE_NONE,
+//                'Start new session'
+//            )
         ;
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int|null|void
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $container = new ContainerBuilder();
@@ -56,12 +65,12 @@ class CrawlCommand extends Command
 
         $scenario = $container->get('scenario');
         $output->writeln("<comment>Running scenario {$scenarioName}...</comment>");
-        if ($input->getOption('new_session')) {
-            $output->writeln("Starting new session");
-        } else {
-            $output->writeln("Proceeding old session");
-        }
-        $scenario->run($input->getArgument('mode'));
+//        if ($input->getOption('new_session')) {
+//            $output->writeln("Starting new session");
+//        } else {
+//            $output->writeln("Proceeding old session");
+//        }
+        $scenario->run($input->getArgument('mode'), !empty($input->getOption('lock')));
 
     }
 }
