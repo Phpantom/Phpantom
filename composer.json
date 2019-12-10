@@ -20,7 +20,7 @@
         "symfony/console": "3.0.*@dev",
         "symfony/dependency-injection": "~2.4",
         "symfony/config":"~2.4",
-        "knplabs/gaufrette": "0.1.*",
+        "knplabs/gaufrette": "0.8.3",
         "zendframework/zend-diactoros": "dev-master",
         "respect/validation": "^1.0@dev"
     },
